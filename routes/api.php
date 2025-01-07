@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Models\StatusUser;
 use App\Models\User;
 
 
@@ -10,6 +11,17 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/users_test_api', function () {
+    return response()->json([
+        'users' => User::all()
+    ], 200);
+});
+
+Route::get('/status_user', function () {
+    return response()->json([
+        'status' => StatusUser::all()
+    ], 200);
+});
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
