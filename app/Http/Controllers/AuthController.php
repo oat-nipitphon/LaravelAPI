@@ -53,7 +53,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Laravel Auth Controller error in register function.',
                 'error' => $e->getMessage()
-            ], 500);
+            ], 401);
         }
     }
 
@@ -62,32 +62,46 @@ class AuthController extends Controller
         try {
 
             $request->validate([
-                'email' => 'required|string|email',
-                'username' => 'required|string',
+                'emailUsername' => 'required|string',
                 'password' => 'required|string',
             ]);
 
-            if (!Auth::attempt($request->only('email','username','password'))) {
+            $user = User::where('email', $request->emailUsername)
+                ->orWhere('username', $request->emailUsername)
+                ->first();
+
+            if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([
-                    'message' => "Invalid credentials",
-                ], 401);
+                    'message' => "laravel login false.",
+                    'user' => $user,
+                    'req' => $request->all()
+                ]);
             }
+            $token = $user->createToken($user->username);
 
-            $user = $request->user();
+            // if (!Auth::attempt($request->only('email','username','password'))) {
+            //     return response()->json([
+            //         'message' => "Invalid credentials",
+            //     ], 401);
+            // }
+            // $user = $request->user();
             // $token = $request->user()->createToken($request->username);
-            $token = $user->createToken($request->username);
 
-            return response()->json([
-                'message' => "login success.",
-                'token' => $token->plainTextToken,
-                'user' => $user
-            ], 200);
+            if (isset($token)) {
+                return response()->json([
+                    'message' => "login success.",
+                    'token' => $token->plainTextToken,
+                    'user' => $user
+                ], 200);
+            } else {
+                dd($user, $token);
+            }
 
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Laravel Auth Controller error in login function.',
                 'error' => $e->getMessage()
-            ]);
+            ], 401);
         }
     }
 
@@ -104,7 +118,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Laravel Auth Controller error in logout function.',
                 'error' => $e->getMessage()
-            ]);
+            ], 401);
         }
     }
 
