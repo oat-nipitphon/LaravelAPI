@@ -57,6 +57,45 @@ class AuthController extends Controller
         }
     }
 
+    public function forgetYourPassword (Request $request) {
+        try {
+
+            $request->validate([
+                'emailUsername' => 'required|string',
+                'password' => 'required|string',
+            ]);
+
+            $user = User::where('email', $request->emailUsername)
+                ->orWhere('username', $request->emailUsername)
+                ->first();
+
+            if ($user) {
+
+                $user->update([
+                    'password' => Hash::make($request->password)
+                ]);
+
+                $token = $user->createToken($user->username);
+
+                return response()->json([
+                    'message' => "Laravel forget your password function success.",
+                    'user' => $user,
+                    'token' => $token->plainTextToken
+                ], 201);
+            }
+
+            return response()->json([
+                'message' => "Laravel user false",
+                'req' => $request->all()
+            ], 422);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Laravel forget your password function error",
+                'error' => $e->getMessage()
+            ], 401);
+        }
+    }
 
     public function login (Request $request) {
         try {

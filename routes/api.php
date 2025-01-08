@@ -43,6 +43,7 @@ Route::get('/status_user', function () {
     ], 200);
 });
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/forget_your_password', [AuthController::class, 'forgetYourPassword']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
