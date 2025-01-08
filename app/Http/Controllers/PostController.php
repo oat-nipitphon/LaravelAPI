@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
@@ -11,7 +12,21 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        try {
+
+            $posts = Post::with('post_types')->get();
+
+            return response()->json([
+                'message' => "Laravel api get posts success.",
+                'user_profile' => $posts
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Laravel api get posts error",
+                'error' => $e->getMessage()
+            ], 401);
+        }
     }
 
     /**

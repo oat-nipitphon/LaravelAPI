@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\PostController;
 use App\Models\StatusUser;
 use App\Models\User;
@@ -49,6 +50,15 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::apiResource('/users', UserController::class)
 ->middleware('auth:sanctum');
+
+
+Route::apiResource('/user_profiles', UserProfileController::class);
+
+
+Route::apiResource('/posts', PostController::class);
+
+
+
 
 Route::get('/get_users_status', function () {
     $user_status = User::with('status_user')->get();
