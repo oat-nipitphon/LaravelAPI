@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class UserProfile extends Model
 {
@@ -16,4 +18,18 @@ class UserProfile extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function user () : HasOne {
+        return $this->HasOne(User::class);
+    }
+
+    public function user_profile_contacts () : HasMany {
+        return $this->HasMany(UserProfileContact::class, 'profile_id', 'id');
+    }
+
+    public function user_profile_images () : HasMany {
+        return $this->HasMany(UserProfileImage::class, 'profile_id', 'id');
+    }
+
+
 }

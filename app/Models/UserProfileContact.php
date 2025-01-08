@@ -5,15 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UserProfileImage extends Model
+class UserProfileContact extends Model
 {
     protected $fillable = [
         'id',
         'profile_id',
-        'image_path',
-        'image_name',
-        'image_data',
-        'image_url',
+        'contact_name',
+        'contact_link_path',
+        'contact_icon_name',
+        'contact_icon_url',
+        'contact_icon_data',
+        'created_at',
+        'updated_at',
     ];
 
     public function user_profile () : BelongsTo {

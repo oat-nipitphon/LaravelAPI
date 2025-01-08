@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PostController;
 use App\Models\StatusUser;
 use App\Models\User;
 
@@ -13,9 +14,27 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 });
 
 Route::get('/users_test_api', function () {
-    return response()->json([
-        'users' => User::all()
-    ], 200);
+    try {
+
+        $users = User::with(
+            'status_user',
+            'user_profile',
+            'user_profile.user_profile_contacts',
+            'user_profile.user_profile_images',
+            'user_logins',
+            'posts.post_types',
+            )->get();
+
+        return response()->json([
+            'users' => $users
+        ], 200);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => "Laravel route users test api error",
+            'error' => $e->getMessage()
+        ], 401);
+    }
 });
 
 Route::get('/status_user', function () {
