@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\TestCodeController;
 use App\Models\StatusUser;
 use App\Models\User;
 
@@ -52,11 +53,15 @@ Route::apiResource('/users', UserController::class)
 ->middleware('auth:sanctum');
 
 
-Route::apiResource('/user_profiles', UserProfileController::class);
+Route::apiResource('/user_profiles', UserProfileController::class)
+->middleware('auth:sanctum');
 
 
-Route::apiResource('/posts', PostController::class);
+Route::apiResource('/posts', PostController::class)
+->middleware('auth:sanctum');
 
+
+Route::post('/uploadImage', [TestCodeController::class, 'uploadImage'])->middleware('auth:sanctum');
 
 
 

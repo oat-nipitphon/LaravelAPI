@@ -2,31 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TestCode;
+use App\Models\User;
+use App\Models\UserProfile;
 use App\Models\Post;
+
 use Illuminate\Http\Request;
 
-class PostController extends Controller
+
+class TestCodeController extends Controller
 {
+
+    public function uploadImage (Request $request) {
+        try {
+
+            return response()->json([
+                'message' => 'Laravel function success'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Laravel function error",
+                'error' => $e->getMessage()
+            ], 401);
+        }
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        try {
-
-            $posts = Post::with('post_types')->get();
-
-            return response()->json([
-                'message' => "Laravel api get posts success.",
-                'posts' => $posts
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Laravel api get posts error",
-                'error' => $e->getMessage()
-            ], 401);
-        }
+        //
     }
 
     /**
@@ -40,7 +47,7 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(TestCode $testCode)
     {
         //
     }
@@ -48,7 +55,7 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, TestCode $testCode)
     {
         //
     }
@@ -56,7 +63,7 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(TestCode $testCode)
     {
         //
     }
