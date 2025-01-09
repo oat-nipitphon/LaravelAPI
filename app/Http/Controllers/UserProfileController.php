@@ -46,6 +46,27 @@ class UserProfileController extends Controller
         //
     }
 
+    public function uploadImageUserProfile (Request $request) {
+        try {
+
+            if (isset($request)) {
+                return response()->json([
+                    'message' => "Laravel upload image user profile success.",
+                    'request' => $request->all(),
+                    'status' => "success"
+                ], 200);
+            }
+
+            dd($request);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Laravel upload image user profile error",
+                'error' => $e->getMessage()
+            ], 401);
+        }
+    }
+
     /**
      * Display the specified resource.
      */
