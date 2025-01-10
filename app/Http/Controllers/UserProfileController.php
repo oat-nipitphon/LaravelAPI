@@ -21,7 +21,6 @@ class UserProfileController extends Controller
                 'message' => "Laravel api user profile success.",
                 'user_profile' => $user_profile
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel profile controller error",
@@ -43,29 +42,84 @@ class UserProfileController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
-
-    public function uploadImageUserProfile (Request $request) {
         try {
 
-            if (isset($request)) {
-                return response()->json([
-                    'message' => "Laravel upload image user profile success.",
-                    'request' => $request->all(),
-                    'status' => "success"
-                ], 200);
+            $fields = $request->validate([
+                'userID' => 'request|integer',
+                'name' => 'request|string',
+                'email' => 'request|string',
+                'username' => 'request|string',
+                'status' => 'request|string',
+                'profileID' => 'request|integer',
+                'titleName' => 'request|string',
+                'fullName' => 'request|string',
+                'nickName' => 'request|string'
+            ]);
+
+            if (!$fields) {
+                dd([
+                    'fields' => $fields,
+                    'request' => $request->all()
+                ]);
             }
 
-            dd($request);
+            $user_profiles = User::all();
 
-        } catch (\Exception $e) {
+            $user_profiles->with('user_profile')->where(function ($query) use ($fields) {
+                $query->where('id', $fields['userID'])
+                ->orWhere('profile_id', $fields['profileID']);
+            });
+
+            dd($user_profiles);
+
+
+        } catch (\Exception $error) {
             return response()->json([
-                'message' => "Laravel upload image user profile error",
-                'error' => $e->getMessage()
-            ], 401);
+                'message' => "Laravel api function error",
+                'error' => $error->getMessage()
+            ]);
         }
     }
+
+    public function uploadImageUserProfile(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'userID' => 'required|integer',
+                'fileImage' => 'required|image|mimes:jpeg,png,jpg,gif|max:10000',
+            ]);
+
+            $userProfile = UserProfile::where('user_id', $validated['userID'])->first();
+
+            if (!$userProfile) {
+                return response()->json(['message' => 'User profile not found'], 404);
+            }
+
+            if ($request->hasFile('fileImage')) {
+                $file = $request->file('fileImage');
+                $imagePath = $file->store('image-user-profile', 'public');
+                $imageName = $file->getClientOriginalName();
+
+                $userProfileImage = UserProfile::updateOrCreate(
+                    ['profile_id' => $userProfile->id],
+                    ['image_path' => $imagePath, 'image_name' => $imageName]
+                );
+
+                return response()->json([
+                    'message' => 'Image uploaded successfully.',
+                    'user_profile_image' => $userProfileImage,
+                ], 201);
+            }
+
+            return response()->json(['message' => 'No file uploaded'], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error uploading image.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
     /**
      * Display the specified resource.
@@ -87,7 +141,6 @@ class UserProfileController extends Controller
                 // 'userProfile' => $userProfile,
                 'userProfile' => $user_profiles
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "laravel user profile function show error",
