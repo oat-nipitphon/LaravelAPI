@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
 use App\Models\UserProfile;
 use Illuminate\Http\Request;
 
@@ -43,41 +44,55 @@ class UserProfileController extends Controller
     public function store(Request $request)
     {
         try {
-
-            $fields = $request->validate([
-                'userID' => 'request|integer',
-                'name' => 'request|string',
-                'email' => 'request|string',
-                'username' => 'request|string',
-                'status' => 'request|string',
-                'profileID' => 'request|integer',
-                'titleName' => 'request|string',
-                'fullName' => 'request|string',
-                'nickName' => 'request|string'
+            // ใช้ validate() ในการตรวจสอบข้อมูลจาก request
+            $validated = $request->validate([
+                'userID' => 'required|integer',
+                'name' => 'required|string',
+                'email' => 'required|string',
+                'userName' => 'required|string',
+                'statusID' => 'required|integer',
+                'profileID' => 'required|integer',
+                'titleName' => 'required|string',
+                'fullName' => 'required|string',
+                'nickName' => 'required|string',
+                'telPhone' => 'required|string',
+                'birthDay' => 'required|date',
             ]);
 
-            if (!$fields) {
-                dd([
-                    'fields' => $fields,
-                    'request' => $request->all()
+            // ส่วนการจัดการข้อมูลต่อไป (เช่น การอัพเดทข้อมูลในฐานข้อมูล)
+            $user = User::findOrFail($validated['userID']);
+            $userProfile = $user->user_profile;
+            if ($userProfile) {
+
+                // ใช้ข้อมูลที่ผ่านการ validate มาอัพเดท
+
+                $userProfile->update([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'username' => $validated['userName'],
+                    'status_id' => $validated['statusID'],
+                    'title_name' => $validated['titleName'],
+                    'full_name' => $validated['fullName'],
+                    'nick_name' => $validated['nickName'],
+                    'tel_phone' => $validated['telPhone'],
+                    'birth_day' => Carbon::parse($validated['birthDay'])->format('Y-m-d'),
                 ]);
+
+                return response()->json([
+                    'message' => 'Profile updated successfully.',
+                    'user' => $user
+                ], 200);
             }
 
-            $user_profiles = User::all();
-
-            $user_profiles->with('user_profile')->where(function ($query) use ($fields) {
-                $query->where('id', $fields['userID'])
-                ->orWhere('profile_id', $fields['profileID']);
-            });
-
-            dd($user_profiles);
-
-
-        } catch (\Exception $error) {
             return response()->json([
-                'message' => "Laravel api function error",
+                'message' => 'User profile not found.'
+            ], 404);
+        } catch (\Exception $error) {
+            // การจัดการข้อผิดพลาด
+            return response()->json([
+                'message' => 'Laravel api function error :: ',
                 'error' => $error->getMessage()
-            ]);
+            ], 500);
         }
     }
 
@@ -133,12 +148,10 @@ class UserProfileController extends Controller
                 return response()->json([
                     'message' => "laravel user profiles false"
                 ]);
-                // dd($userProfile, $id);
             }
 
             return response()->json([
                 'message' => "laravel get user profile function show success.",
-                // 'userProfile' => $userProfile,
                 'userProfile' => $user_profiles
             ], 200);
         } catch (\Exception $e) {

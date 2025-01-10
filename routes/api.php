@@ -27,22 +27,22 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::apiResource('/users', UserController::class)
-->middleware('auth:sanctum');
+    ->middleware('auth:sanctum');
 
 Route::apiResource('/user_profiles', UserProfileController::class)
-->middleware('auth:sanctum');
+    ->middleware('auth:sanctum');
 
 
 
 Route::apiResource('/posts', PostController::class)
-->middleware('auth:sanctum');
+    ->middleware('auth:sanctum');
 
 
 Route::put('/user_profile/upload_image_profile', [UserProfileController::class, 'uploadImageUserProfile'])
-->middleware('auth:sanctum');
+    ->middleware('auth:sanctum');
 
 Route::post('/uploadImage', [TestCodeController::class, 'uploadImage'])
-->middleware('auth:sanctum');
+    ->middleware('auth:sanctum');
 
 
 
