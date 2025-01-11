@@ -10,9 +10,18 @@ use App\Http\Controllers\TestCodeController;
 use App\Models\StatusUser;
 use App\Models\User;
 use App\Models\UserProfileContact;
+use App\Http\Controllers\ImageUploadController;
+use App\Models\ImageUpload;
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+Route::middleware(['auth:sanctum'])->get('/user', function (Request $request)
+{
+    $user_req = $request->user();
+    $user_login = User::with('user_profile')->findOrFail($user_req->id);
+    $token = $user_login->createToken($user_login->username)->plainTextToken;
+    return response()->json([
+        'user_login' => $user_login,
+        'token' => $token
+    ], 200);
 });
 
 Route::get('/status_user', function () {
@@ -29,22 +38,16 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::apiResource('/users', UserController::class)
     ->middleware('auth:sanctum');
 
-Route::apiResource('/user_profiles', UserProfileController::class)
-    ->middleware('auth:sanctum');
-
-
-
 Route::apiResource('/posts', PostController::class)
     ->middleware('auth:sanctum');
 
-
-Route::put('/user_profile/upload_image_profile', [UserProfileController::class, 'uploadImageUserProfile'])
+Route::apiResource('/user_profiles', UserProfileController::class)
     ->middleware('auth:sanctum');
 
-Route::post('/uploadImage', [TestCodeController::class, 'uploadImage'])
-    ->middleware('auth:sanctum');
+Route::post('/user_profile/upload_image_profile',
+    [UserProfileController::class, 'uploadImageUserProfile']);
 
-
+Route::post('/upload_image', [ImageUploadController::class, 'uploadImage']);
 
 // Route::get('/status_user', function () {
 //     $user_status = User::with('status_user')->get();

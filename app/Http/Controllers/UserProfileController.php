@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Carbon\Carbon;
 use App\Models\UserProfile;
+use App\Models\UserProfileImage;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class UserProfileController extends Controller
 {
@@ -99,34 +100,35 @@ class UserProfileController extends Controller
     public function uploadImageUserProfile(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'userID' => 'required|integer',
+
+            // dd($request->all());
+
+            $request->validate([
+                'profileID' => 'required|integer|exists:user_profiles,id',
                 'fileImage' => 'required|image|mimes:jpeg,png,jpg,gif|max:10000',
             ]);
 
-            $userProfile = UserProfile::where('user_id', $validated['userID'])->first();
-
-            if (!$userProfile) {
-                return response()->json(['message' => 'User profile not found'], 404);
-            }
-
             if ($request->hasFile('fileImage')) {
-                $file = $request->file('fileImage');
-                $imagePath = $file->store('image-user-profile', 'public');
-                $imageName = $file->getClientOriginalName();
 
-                $userProfileImage = UserProfile::updateOrCreate(
-                    ['profile_id' => $userProfile->id],
-                    ['image_path' => $imagePath, 'image_name' => $imageName]
-                );
+                $file = $request->file('fileImage');
+
+                $filePath = $file->store('images', 'public');
+                $imageName = $file->getClientOriginalName();
+                $fileContent = file_get_contents($file); // อ่านไฟล์เป็น binary
+
+                $userProfileImage = UserProfileImage::create([
+                    'profile_id' => $request->profileID,
+                    'image_name' => $imageName,
+                    'image_path' => $filePath,
+                    'image_data' => $fileContent,
+                ]);
 
                 return response()->json([
-                    'message' => 'Image uploaded successfully.',
-                    'user_profile_image' => $userProfileImage,
-                ], 201);
+                    'message' => 'Image uploaded and saved to database successfully.',
+                    'userProfileImage' => $userProfileImage,
+                ], 200);
             }
 
-            return response()->json(['message' => 'No file uploaded'], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error uploading image.',
