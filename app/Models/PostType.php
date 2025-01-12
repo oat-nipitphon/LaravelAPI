@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PostType extends Model
 {
+        /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'post_types';
     protected $fillabel = [
         'id',
         'post_type_name',

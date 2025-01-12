@@ -12,22 +12,6 @@ use Illuminate\Http\Request;
 
 class TestCodeController extends Controller
 {
-
-    public function uploadImage (Request $request) {
-        try {
-
-            return response()->json([
-                'message' => 'Laravel function success'
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Laravel function error",
-                'error' => $e->getMessage()
-            ], 401);
-        }
-    }
-
     /**
      * Display a listing of the resource.
      */

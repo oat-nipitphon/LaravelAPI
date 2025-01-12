@@ -7,6 +7,18 @@ use Illuminate\Database\Eloquent\Relations\belongsTo;
 
 class UserLogin extends Model
 {
+        /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'user_logins';
+
+    /**
+     * user_status_login_number
+     * user_status_login_name
+     * 1 = online , 0 = offline
+     */
     protected $fillable = [
         'id',
         'user_id',

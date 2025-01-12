@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Post extends Model
 {
+        /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'posts';
     protected $fillable = [
         'id',
         'post_type_id',

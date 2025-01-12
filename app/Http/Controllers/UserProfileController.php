@@ -61,12 +61,12 @@ class UserProfileController extends Controller
             ]);
 
             // ส่วนการจัดการข้อมูลต่อไป (เช่น การอัพเดทข้อมูลในฐานข้อมูล)
-            $user = User::findOrFail($validated['userID']);
-            $userProfile = $user->user_profile;
+            $userProfile = UserProfile::findOrFail($validated['profileID']);
+
             if ($userProfile) {
 
                 // ใช้ข้อมูลที่ผ่านการ validate มาอัพเดท
-
+                $birthDay = Carbon::parse($validated['birthDay'])->format('Y-m-d');
                 $userProfile->update([
                     'name' => $validated['name'],
                     'email' => $validated['email'],
@@ -76,18 +76,19 @@ class UserProfileController extends Controller
                     'full_name' => $validated['fullName'],
                     'nick_name' => $validated['nickName'],
                     'tel_phone' => $validated['telPhone'],
-                    'birth_day' => Carbon::parse($validated['birthDay'])->format('Y-m-d'),
+                    'birth_day' => $birthDay,
                 ]);
 
                 return response()->json([
                     'message' => 'Profile updated successfully.',
-                    'user' => $user
+                    'userProfile' => $userProfile
                 ], 200);
             }
 
             return response()->json([
                 'message' => 'User profile not found.'
             ], 404);
+
         } catch (\Exception $error) {
             // การจัดการข้อผิดพลาด
             return response()->json([
@@ -100,8 +101,6 @@ class UserProfileController extends Controller
     public function uploadImageUserProfile(Request $request)
     {
         try {
-
-            // dd($request->all());
 
             $request->validate([
                 'profileID' => 'required|integer|exists:user_profiles,id',

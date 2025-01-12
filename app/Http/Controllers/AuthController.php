@@ -2,29 +2,22 @@
 
 namespace App\Http\Controllers;
 
-// use App\Models\Auth;
+use App\Models\AuthLogin;
 use App\Models\User;
+use App\Models\UserProfile;
+use App\Models\UserLogin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
 
-    public function register (Request $request) {
+    public function register(Request $request)
+    {
         try {
-
-            // $fields = $request->validate([
-            //     'name' => 'required|max:255',
-            //     'email' => 'required|email|unique:users',
-            //     'password' => 'required|confirmed',
-            //     'status' => 'required'
-            // ]);
-
-            // $user = User::create($fields);
-
             $request->validate([
-                // 'name' => 'required|string|max:255',
                 'username' => 'required|string|max:255|unique:users',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:3',
@@ -39,16 +32,28 @@ class AuthController extends Controller
                 'status_id' => $request->statusID
             ]);
 
-            $token = $user->createToken($request->username);
 
-            if (isset($token)) {
+            $token = $user->createToken($user->username);
+
+            $dateTimeLogin = Carbon::now()->format('Y-m-d');
+            $user_login = UserLogin::create([
+                'user_id' => $user->id,
+                'user_status_login_number' => 1,
+                'user_status_login_name' => "online",
+                'user_date_time_login' => $dateTimeLogin
+            ]);
+
+            UserProfile::create([
+                'user_id' => $user->id
+            ]);
+
+            if ($user->id && $user_login->user_id) {
                 return response()->json([
                     'user' => $user,
                     'token' => $token->plainTextToken,
                     'message' => 'User registered successfully.'
                 ], 201);
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Laravel Auth Controller error in register function.',
@@ -57,7 +62,9 @@ class AuthController extends Controller
         }
     }
 
-    public function forgetYourPassword (Request $request) {
+
+    public function forgetYourPassword(Request $request)
+    {
         try {
 
             $request->validate([
@@ -88,7 +95,6 @@ class AuthController extends Controller
                 'message' => "Laravel user false",
                 'req' => $request->all()
             ], 422);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel forget your password function error",
@@ -97,7 +103,8 @@ class AuthController extends Controller
         }
     }
 
-    public function login (Request $request) {
+    public function login(Request $request)
+    {
         try {
 
             $request->validate([
@@ -135,7 +142,6 @@ class AuthController extends Controller
             } else {
                 dd($user, $token);
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Laravel Auth Controller error in login function.',
@@ -144,7 +150,8 @@ class AuthController extends Controller
         }
     }
 
-    public function logout (Request $request) {
+    public function logout(Request $request)
+    {
         try {
 
             // $request->user()->currentAccessToken->delete();
@@ -152,7 +159,6 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Logged out successfully'
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Laravel Auth Controller error in logout function.',

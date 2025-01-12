@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class StatusUser extends Model
 {
+        /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'status_users';
     protected $fillable = [
         'id',
         'status_name'

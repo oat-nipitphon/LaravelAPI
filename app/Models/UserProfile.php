@@ -5,15 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Laravel\Sanctum\HasApiTokens;
 
 class UserProfile extends Model
 {
+
+    use HasApiTokens;
+
     protected $fillable = [
         'id',
         'user_id',
         'title_name',
         'full_name',
         'nick_name',
+        'tel_phone',
         'birth_day',
         'created_at',
         'updated_at'
