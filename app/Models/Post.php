@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laravel\Sanctum\HasApiTokens;
 
 class Post extends Model
 {
-        /**
+
+    use HasApiTokens;
+
+    /**
      * The table associated with the model.
      *
      * @var string
@@ -20,6 +24,7 @@ class Post extends Model
         'type_id',
         'refer',
         'user_id',
+        'user_link_profile',
         'spam_post_status',
         'created_at',
         'updated_at',
