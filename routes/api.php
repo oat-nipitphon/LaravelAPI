@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use App\Models\StatusUser;
 use App\Models\UserProfileContact;
+use App\Models\Post;
+use App\Models\PostType;
 use App\Models\ImageUpload;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
@@ -21,8 +23,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ImageUploadController;
 
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request)
-{
+Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     $user_req = $request->user();
     $user_login = User::with('user_profile', 'user_profile.user_profile_images')->findOrFail($user_req->id);
     $token = $user_login->createToken($user_login->username)->plainTextToken;
@@ -51,6 +52,27 @@ Route::apiResource('/user_profiles', UserProfileController::class)->middleware('
 Route::apiResource('/user_profile_image/upload', UserProfileImageController::class)->middleware('auth:sanctum');
 
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
+Route::get('/post_types', function () {
+    return response()->json([
+        'post_types' => PostType::all()
+    ], 200);
+});
+Route::get('/get_posts', function () {
+    try {
+
+        $posts = Post::with('post_types')->get();
+
+        return response()->json([
+            'message' => "Laravel api get posts success.",
+            'posts' => $posts
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => "Laravel api get posts error",
+            'error' => $e->getMessage()
+        ], 401);
+    }
+});
 
 Route::post('/upload_image', [UserProfileImageController::class, 'uploadImage']);
 Route::post('/upload_image_new', [UserProfileImageController::class, 'uploadImageNew']);

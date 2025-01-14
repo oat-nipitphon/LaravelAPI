@@ -15,14 +15,14 @@ class Post extends Model
     protected $table = 'posts';
     protected $fillable = [
         'id',
-        'post_type_id',
         'post_title',
         'post_content',
-        'post_ref',
+        'type_id',
+        'refer',
+        'user_id',
         'spam_post_status',
         'created_at',
         'updated_at',
-        'user_id',
 
     ];
 
@@ -31,7 +31,7 @@ class Post extends Model
     }
 
     public function post_types () : BelongsTo {
-        return $this->belongsTo(PostType::class, 'post_type_id', 'id');
+        return $this->belongsTo(PostType::class, 'type_id', 'id');
     }
 
 }
