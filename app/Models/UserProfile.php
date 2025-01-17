@@ -6,12 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class UserProfile extends Model
 {
 
-    use HasApiTokens;
+    use HasApiTokens, HasFactory;
 
+    protected $table = 'user_profiles';
     protected $fillable = [
         'id',
         'user_id',

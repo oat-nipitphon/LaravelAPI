@@ -88,7 +88,6 @@ class UserProfileController extends Controller
             return response()->json([
                 'message' => 'User profile not found.'
             ], 404);
-
         } catch (\Exception $error) {
             // การจัดการข้อผิดพลาด
             return response()->json([
@@ -98,44 +97,49 @@ class UserProfileController extends Controller
         }
     }
 
-    public function uploadImageUserProfile(Request $request)
+    public function uploadImageProfile(Request $req)
     {
         try {
-
-            $request->validate([
-                'profileID' => 'required|integer|exists:user_profiles,id',
-                'fileImage' => 'required|image|mimes:jpeg,png,jpg,gif|max:10000',
+            // Validate the request
+            $req->validate([
+                'profileID' => 'required|integer',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:10000',
             ]);
 
-            if ($request->hasFile('fileImage')) {
+            // Find the user profile
+            $userProfile = UserProfile::findOrFail($req->profileID);
 
-                $file = $request->file('fileImage');
-
-                $filePath = $file->store('images', 'public');
-                $imageName = $file->getClientOriginalName();
-                $fileContent = file_get_contents($file); // อ่านไฟล์เป็น binary
-
-                $userProfileImage = UserProfileImage::create([
-                    'profile_id' => $request->profileID,
-                    'image_name' => $imageName,
-                    'image_path' => $filePath,
-                    'image_data' => $fileContent,
-                ]);
-
+            if (!$req->hasFile('imageFile')) {
                 return response()->json([
-                    'message' => 'Image uploaded and saved to database successfully.',
-                    'userProfileImage' => $userProfileImage,
-                ], 200);
+                    'message' => "No image file provided.",
+                ], 400);
             }
 
+            // Handle the image file
+            $imageFile = $req->file('imageFile');
+            $imagePath = $imageFile->store('profile_images', 'public');
+            $imageName = $imageFile->getClientOriginalName();
+            $imageNameNew = time() . " - " . $imageName;
+            $imageData = file_get_contents($imageFile->getRealPath());
+
+            // Save the image data in the database
+            UserProfileImage::create([
+                'profile_id' => $req->profileID,
+                'image_path' => $imagePath,
+                'image_name' => $imageNameNew,
+                'image_data' => $imageData,
+            ]);
+
+            return response()->json([
+                'message' => "Image uploaded successfully.",
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error uploading image.',
+                'message' => "An error occurred.",
                 'error' => $e->getMessage(),
             ], 500);
         }
     }
-
 
     /**
      * Display the specified resource.

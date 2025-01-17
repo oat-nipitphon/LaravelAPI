@@ -12,6 +12,22 @@ use Illuminate\Http\Request;
 
 class TestCodeController extends Controller
 {
+
+    public function uploadImage(Request $request)
+    {
+        try {
+
+            dd($request->all());
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+
     /**
      * Display a listing of the resource.
      */

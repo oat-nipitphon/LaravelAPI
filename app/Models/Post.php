@@ -26,6 +26,7 @@ class Post extends Model
         'user_id',
         'user_link_profile',
         'spam_post_status',
+        'deletetion_status',
         'created_at',
         'updated_at',
 
@@ -37,6 +38,10 @@ class Post extends Model
 
     public function post_types () : BelongsTo {
         return $this->belongsTo(PostType::class, 'type_id', 'id');
+    }
+
+    public function post_deletetion () : BelongsTo {
+        return $this->belongsTo(PostDeletetion::class, 'post_id', 'id');
     }
 
 }

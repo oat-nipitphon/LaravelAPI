@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\PostDeletetion;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class PostController extends Controller
 {
@@ -14,8 +16,8 @@ class PostController extends Controller
     {
         try {
 
-            $posts = Post::with('post_types', 'user')->get();
-
+            $posts_all = Post::with('post_types', 'user')->get();
+            $posts = $posts_all->where('daletetion_status', 0);
             return response()->json([
                 'message' => "Laravel api get posts success.",
                 'posts' => $posts
@@ -130,14 +132,12 @@ class PostController extends Controller
                     'message' => "Laravel function update post success.",
                     'post' => $post
                 ], 201);
-
             } else {
                 return response()->json([
                     'message' => "Laravel function update post false.",
                     'post' => $post
                 ], 204);
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel controller function update error",
@@ -149,31 +149,83 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    // public function destroy(string $id)
+    // {
+    //     try {
+
+    //         $post = Post::FindOrFail($id);
+
+    //         if (!$post) {
+    //             return response()->json([
+    //                 'message' => "Laravel destroy request false.",
+    //                 'post' => $post,
+    //                 'id' => $id
+    //             ], 204);
+    //         }
+
+    //         $post->update([
+    //             'deletetion_status' => '1'
+    //         ]);
+
+    //         $post_deletetion = PostDeletetion::where('post_id', $post->id)->first();
+    //         $dateTime = Carbon::now()->format('Y-m-d');
+
+    //         if (!$post_deletetion) {
+
+    //             $post_deletetion->create([
+    //                 'post_id' => $post->id,
+    //                 'date_time_delete' => $dateTime,
+    //                 'deletetion_status' => 1
+    //             ]);
+
+    //         } else {
+
+    //             $post_deletetion->update([
+    //                 'post_id' => $post->id,
+    //                 'date_time_delete' => $dateTime,
+    //                 'deletetion_status' => 1
+    //             ]);
+
+    //         }
+
+
+    //         return response()->json([
+    //             'message' => "Laravel destroy post success."
+    //         ], 200);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => "Laravel destroy error",
+    //             'error' => $e->getMessage()
+    //         ], 400);
+    //     }
+    // }
     public function destroy(string $id)
     {
         try {
+            $post = Post::findOrFail($id);
 
-            $post = Post::FindOrFail($id);
+            $post->update([
+                'deletetion_status' => 1,
+            ]);
 
-            if (!$post) {
-                return response()->json([
-                    'message' => "Laravel destroy request false.",
-                    'post' => $post,
-                    'id' => $id
-                ], 204);
-            }
-
-            $post->delete();
+            $dateTime = Carbon::now();
+            PostDeletetion::updateOrCreate(
+                ['post_id' => $post->id],
+                [
+                    'date_time_delete' => $dateTime,
+                    'deletetion_status' => 1,
+                ]
+            );
 
             return response()->json([
-                'message' => "Laravel destroy post success."
+                'message' => "Post deleted successfully.",
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Laravel destroy error",
+                'message' => "Error during post deletion.",
                 'error' => $e->getMessage()
-            ], 400);
+            ], 500);
         }
     }
 }
