@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\PostDeletetion;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Faker\Core\DateTime;
 
 class PostController extends Controller
 {
@@ -16,8 +17,12 @@ class PostController extends Controller
     {
         try {
 
-            $posts_all = Post::with('post_types', 'user')->get();
-            $posts = $posts_all->where('daletetion_status', 0);
+            // status 0=false 1=true
+            $posts = Post::with('post_types', 'user')
+                ->where('deletetion_status', 0)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
             return response()->json([
                 'message' => "Laravel api get posts success.",
                 'posts' => $posts
@@ -44,14 +49,16 @@ class PostController extends Controller
                 'typeID' => 'required|integer',
             ]);
 
+            $dateTimeCreatePost = Carbon::now('Asia/Bangkok')->setTimezone('UTC');
             $post = new Post();
-
             $post->create([
                 'post_title' => $request->title,
                 'post_content' => $request->content,
                 'refer' => $request->refer,
                 'type_id' => $request->typeID,
-                'user_id' => $request->userID
+                'user_id' => $request->userID,
+                'deletetion_status' => 0, // status 0 == false // status 1 == true
+                'created_at' => $dateTimeCreatePost,
             ]);
 
             if (!$post) {
@@ -146,60 +153,10 @@ class PostController extends Controller
         }
     }
 
+
     /**
      * Remove the specified resource from storage.
      */
-    // public function destroy(string $id)
-    // {
-    //     try {
-
-    //         $post = Post::FindOrFail($id);
-
-    //         if (!$post) {
-    //             return response()->json([
-    //                 'message' => "Laravel destroy request false.",
-    //                 'post' => $post,
-    //                 'id' => $id
-    //             ], 204);
-    //         }
-
-    //         $post->update([
-    //             'deletetion_status' => '1'
-    //         ]);
-
-    //         $post_deletetion = PostDeletetion::where('post_id', $post->id)->first();
-    //         $dateTime = Carbon::now()->format('Y-m-d');
-
-    //         if (!$post_deletetion) {
-
-    //             $post_deletetion->create([
-    //                 'post_id' => $post->id,
-    //                 'date_time_delete' => $dateTime,
-    //                 'deletetion_status' => 1
-    //             ]);
-
-    //         } else {
-
-    //             $post_deletetion->update([
-    //                 'post_id' => $post->id,
-    //                 'date_time_delete' => $dateTime,
-    //                 'deletetion_status' => 1
-    //             ]);
-
-    //         }
-
-
-    //         return response()->json([
-    //             'message' => "Laravel destroy post success."
-    //         ], 200);
-
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => "Laravel destroy error",
-    //             'error' => $e->getMessage()
-    //         ], 400);
-    //     }
-    // }
     public function destroy(string $id)
     {
         try {
@@ -226,6 +183,59 @@ class PostController extends Controller
                 'message' => "Error during post deletion.",
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function recoverGetPost(string $userID)
+    {
+        try {
+
+            $recoverPosts = Post::with('post_types')
+                ->where('user_id', $userID)
+                ->where('deletetion_status', 1)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            if (!$recoverPosts) {
+                dd($recoverPosts);
+            }
+
+            return response()->json([
+                'message' => "Laravel recoverPosts GET success.",
+                'recoverPosts' => $recoverPosts
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'messageError' => "Laravel recover prost error" . $e->getMessage()
+            ], 400);
+        }
+    }
+
+    public function recoverPost(string $postID)
+    {
+        try {
+
+            $statusRecoverPost = Post::where('id', $postID)->first();
+
+            if ($statusRecoverPost) {
+                $statusRecoverPost->update([
+                    'deletetion_status' => 0
+                ]);
+
+                if ($statusRecoverPost) {
+                    return response()->json([
+                        'message' => "laravel recover post success",
+                        'post' => $statusRecoverPost
+                    ], 201);
+                }
+            }
+
+            dd($statusRecoverPost);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'messageError' => "Laravel recover prost error" . $e->getMessage()
+            ], 401);
         }
     }
 }
