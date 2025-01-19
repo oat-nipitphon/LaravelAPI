@@ -242,76 +242,104 @@ class PostController extends Controller
         }
     }
 
-    public function postPopLike(string $userID, string $postID, string $popStatusLike) {
+    public function postPopLike (string $userID, string $postID, string $popStatusLike) {
         try {
-            // Check if the user already reacted
-            $existingReaction = PostPopularity::where('user_id', $userID)
-                ->where('post_id', $postID)
-                ->first();
 
-            if ($existingReaction) {
-                // Toggle reaction
-                if ($existingReaction->pop_status === $popStatusLike) {
-                    $existingReaction->delete();
+            $postPopLike = Post::with('postPopularity')
+                ->where('id', $postID)
+                ->whereHas('postPopularity', function ($query) use ($userID) {
+                    $query->where('user_id', $userID);
+                })
+                ->get();
+
+            // Check Double click pop like
+            if ($postPopLike) {
+                $userPopStatus = new PostPopularity();
+                $userPopStatus->where('user_id', $userID)->first();
+                if ($userPopStatus) {
+                    $userPopStatus->delete();
                 } else {
-                    $existingReaction->update(['pop_status' => $popStatusLike]);
+                    $userPopStatus->update([
+                        'post_id' => $postID,
+                        'user_id' => $userID,
+                        'pop_status' => "Like"
+                    ]);
                 }
             } else {
-                // Create new reaction
-                PostPopularity::create([
-                    'post_id' => $postID,
-                    'user_id' => $userID,
-                    'pop_status' => $popStatusLike,
-                ]);
+                $userPopStatus = "New Create Pop Like";
+               PostPopularity::create([
+                'post_id' => $postID,
+                'user_id' => $userID,
+                'pop_status' => "Like"
+               ]);
             }
 
-            $updatedReactions = PostPopularity::where('post_id', $postID)->get();
+            $postPopLikeArray = [
+                'postPopLike' => $postPopLike,
+                'userPopStatus' => $userPopStatus
+            ];
 
             return response()->json([
-                'message' => "Pop Like updated successfully.",
-                'updatedReactions' => $updatedReactions
+                'message' => "Laravel pop like success.",
+                'postPopLikeArray' => $postPopLikeArray
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Error updating Pop Like.",
+                'message' => "Laravel post pop like error",
                 'error' => $e->getMessage()
             ], 400);
         }
     }
 
-    public function postPopDisLike(string $userID, string $postID, string $popStatusDisLike) {
+    public function postPopDisLike (string $userID, string $postID, string $popStatusDisLike) {
         try {
-            $existingReaction = PostPopularity::where('user_id', $userID)
-                ->where('post_id', $postID)
-                ->first();
 
-            if ($existingReaction) {
-                if ($existingReaction->pop_status === $popStatusDisLike) {
-                    $existingReaction->delete();
+            $postPopDisLike = Post::with('postPopularity')
+                ->where('id', $postID)
+                ->whereHas('postPopularity', function ($query) use ($userID) {
+                    $query->where('user_id', $userID);
+                })
+                ->get();
+
+            // Check Double click pop like
+            if ($postPopDisLike) {
+                $userPopStatus = new PostPopularity();
+                $userPopStatus->where('user_id', $userID)->first();
+                if ($userPopStatus) {
+                    $userPopStatus->delete();
                 } else {
-                    $existingReaction->update(['pop_status' => $popStatusDisLike]);
+                    $userPopStatus->update([
+                        'post_id' => $postID,
+                        'user_id' => $userID,
+                        'pop_status' => "DisLike"
+                    ]);
                 }
             } else {
-                PostPopularity::create([
-                    'post_id' => $postID,
-                    'user_id' => $userID,
-                    'pop_status' => $popStatusDisLike,
-                ]);
+                $userPopStatus = "New Create Pop DisLike";
+               PostPopularity::create([
+                'post_id' => $postID,
+                'user_id' => $userID,
+                'pop_status' => "DisLike"
+               ]);
             }
 
-            $updatedReactions = PostPopularity::where('post_id', $postID)->get();
+            $postPopDisLikeArray = [
+                'postPopDisLike' => $postPopDisLike,
+                'userPopStatus' => $userPopStatus
+            ];
 
             return response()->json([
-                'message' => "Pop Dislike updated successfully.",
-                'updatedReactions' => $updatedReactions
+                'message' => "Laravel pop Dislike success.",
+                'postPopLikeArray' => $postPopDisLikeArray
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
-                'message' => "Error updating Pop Dislike.",
+                'message' => "Laravel post pop dis like error",
                 'error' => $e->getMessage()
             ], 400);
         }
     }
-
 
 }

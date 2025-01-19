@@ -50,14 +50,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::apiResource('/users', UserController::class)->middleware('auth:sanctum');
 
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
-
-Route::apiResource('/user_profile_image/upload', UserProfileImageController::class)->middleware('auth:sanctum');
+Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile']);
 
 
 
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
 
-Route::prefix('/posts/populairty')->group(function () {
+Route::prefix('/posts/popularity')->group(function () {
     Route::post('/{userID}/{postID}/{popStatusLike}', [PostController::class, 'postPopLike']);
     Route::post('/{userID}/{postID}/{popStatusDisLike}', [PostController::class, 'postPopDisLike']);
 })->middleware('auth:sanctum');
@@ -86,6 +85,3 @@ Route::get('/get_posts', function () {
 
 Route::post('/posts/report_recover/{userID}', [PostController::class, 'recoverGetPost'])->middleware('auth:sanctum');
 Route::post('/posts/recover/{postID}', [PostController::class, 'recoverPost'])->middleware('auth:sanctum');
-
-Route::post('/upload_image', [UserProfileImageController::class, 'uploadImage']);
-Route::post('/upload_image_new', [UserProfileImageController::class, 'uploadImageNew']);
