@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\PostDeletetion;
+use App\Models\PostPopularity;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Faker\Core\DateTime;
@@ -18,7 +19,7 @@ class PostController extends Controller
         try {
 
             // status 0=false 1=true
-            $posts = Post::with('post_types', 'user')
+            $posts = Post::with('post_types', 'user', 'postPopularity')
                 ->where('deletetion_status', 0)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -239,54 +240,6 @@ class PostController extends Controller
         }
     }
 
-    public function postGetPopulairty (string $postID) {
-
-        try {
-
-            $posts = Post::with('post_types', 'user', 'postPopularity')
-                ->where('deletetion_status', 0)
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            $post = $posts->findOrFail($postID);
-
-            if ($post) {
-
-                // Check user pop post status
-                // $checkUserPopPost = $post->where('')->first();
-
-                // Sum total pop like
-                // $sumTotalPopLike = $post->postPopularity()
-                //     ->where('')
-                //     ->get();
-
-                // Sum total pop dis lile
-                // $sumTotalPopDisLike = $post->where('')->get();
-
-                $postPopArray = [
-                    'post' => $post
-                ];
-
-                return response()->json([
-                    'message' => "post pop like success.",
-                    'postPopArray' => $postPopArray
-                ], 200);
-
-            }
-
-            dd("post false :: ", $posts, $post);
-
-
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Laravel post get populairty error",
-                'error' => $e->getMessage()
-            ]);
-        }
-
-    }
-
     public function postPopLike (string $userID, string $postID, string $popStatusLike) {
         try {
 
@@ -297,13 +250,26 @@ class PostController extends Controller
                 })
                 ->get();
 
-            // $postPopLike = "USERID ".$userID." POSTID ".$postID." POPSTATUS ".$popStatusLike;
-
+            // Check Double click pop like
             if ($postPopLike) {
-                $userPopStatus = "Update";
-
+                $userPopStatus = new PostPopularity();
+                $userPopStatus->where('user_id', $userID)->first();
+                if ($userPopStatus) {
+                    $userPopStatus->delete();
+                } else {
+                    $userPopStatus->update([
+                        'post_id' => $postID,
+                        'user_id' => $userID,
+                        'pop_status' => "Like"
+                    ]);
+                }
             } else {
-                $userPopStatus = "Create";
+                $userPopStatus = "New Create Pop Like";
+               PostPopularity::create([
+                'post_id' => $postID,
+                'user_id' => $userID,
+                'pop_status' => "Like"
+               ]);
             }
 
             $postPopLikeArray = [
@@ -324,8 +290,47 @@ class PostController extends Controller
         }
     }
 
-    public function postPopDisLike (string $postID, string $popStatusDisLike) {
+    public function postPopDisLike (string $userID, string $postID, string $popStatusDisLike) {
         try {
+
+            $postPopDisLike = Post::with('postPopularity')
+                ->where('id', $postID)
+                ->whereHas('postPopularity', function ($query) use ($userID) {
+                    $query->where('user_id', $userID);
+                })
+                ->get();
+
+            // Check Double click pop like
+            if ($postPopDisLike) {
+                $userPopStatus = new PostPopularity();
+                $userPopStatus->where('user_id', $userID)->first();
+                if ($userPopStatus) {
+                    $userPopStatus->delete();
+                } else {
+                    $userPopStatus->update([
+                        'post_id' => $postID,
+                        'user_id' => $userID,
+                        'pop_status' => "DisLike"
+                    ]);
+                }
+            } else {
+                $userPopStatus = "New Create Pop DisLike";
+               PostPopularity::create([
+                'post_id' => $postID,
+                'user_id' => $userID,
+                'pop_status' => "DisLike"
+               ]);
+            }
+
+            $postPopDisLikeArray = [
+                'postPopDisLike' => $postPopDisLike,
+                'userPopStatus' => $userPopStatus
+            ];
+
+            return response()->json([
+                'message' => "Laravel pop Dislike success.",
+                'postPopLikeArray' => $postPopDisLikeArray
+            ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
