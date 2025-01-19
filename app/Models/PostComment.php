@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PostComment extends Model
 {
@@ -16,4 +18,13 @@ class PostComment extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function post () : BelongsTo {
+        return $this->belongsTo(Post::class, 'post_id', 'id');
+    }
+
+    public function postCommentPopularity () : HasMany {
+        return $this->hasMany(PostCommentPopularity::class);
+    }
+
 }

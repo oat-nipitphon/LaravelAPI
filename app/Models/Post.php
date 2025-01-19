@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
 class Post extends Model
@@ -41,6 +42,14 @@ class Post extends Model
 
     public function post_deletetion () : BelongsTo {
         return $this->belongsTo(PostDeletetion::class, 'post_id', 'id');
+    }
+
+    public function postPopularity () : HasMany {
+        return $this->hasMany(PostPopularity::class);
+    }
+
+    public function postComment () : HasMany {
+        return $this->MasMany(PostComment::class);
     }
 
 }

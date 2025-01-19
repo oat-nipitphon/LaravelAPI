@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PostCommentPopularity extends Model
 {
@@ -14,4 +15,9 @@ class PostCommentPopularity extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function postComment () : BelongsTo {
+        return $this->belongsTo(PostCommentPopularity::class, 'comment_id', 'id');
+    }
+
 }

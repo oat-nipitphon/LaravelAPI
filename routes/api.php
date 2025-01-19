@@ -56,6 +56,12 @@ Route::apiResource('/user_profile_image/upload', UserProfileImageController::cla
 
 
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
+
+Route::prefix('/posts/populairty')->group(function () {
+    Route::post('/{userID}/{postID}/{popStatusLike}', [PostController::class, 'postPopLike']);
+    Route::post('/{userID}/{postID}/{popStatusDisLike}', [PostController::class, 'postPopDisLike']);
+})->middleware('auth:sanctum');
+
 Route::get('/post_types', function () {
     return response()->json([
         'post_types' => PostType::all()
