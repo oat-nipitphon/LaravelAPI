@@ -16,7 +16,7 @@ class AdminManagerPostController extends Controller
         try {
 
             $posts = Post::with(
-                'user',
+                'user.userProfile',
                 'postType',
                 'postDeletetion',
                 'postPopularity',
