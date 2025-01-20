@@ -19,7 +19,7 @@ class UserProfileContact extends Model
         'updated_at',
     ];
 
-    public function user_profile () : BelongsTo {
+    public function userProfile () : BelongsTo {
         return $this->belongsTo(UserProfile::class);
     }
 

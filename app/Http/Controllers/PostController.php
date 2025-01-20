@@ -19,7 +19,9 @@ class PostController extends Controller
         try {
 
             // status 0=false 1=true
-            $posts = Post::with('post_types', 'user', 'postPopularity')
+            $posts = Post::with(
+                    'postType', 'user', 'postPopularity'
+                )
                 ->where('deletetion_status', 0)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -87,7 +89,7 @@ class PostController extends Controller
     {
         try {
 
-            $post = Post::with('post_types', 'user')->findOrFail($id);
+            $post = Post::with('postType', 'user')->findOrFail($id);
 
             if (!$post) {
                 return response()->json([
@@ -193,7 +195,7 @@ class PostController extends Controller
     {
         try {
 
-            $recoverPosts = Post::with('post_types')
+            $recoverPosts = Post::with('postType')
                 ->where('user_id', $userID)
                 ->where('deletetion_status', 1)
                 ->orderBy('created_at', 'desc')

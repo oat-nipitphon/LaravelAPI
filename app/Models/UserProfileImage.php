@@ -22,7 +22,7 @@ class UserProfileImage extends Model
         'image_url',
     ];
 
-    public function user_profile () : BelongsTo {
+    public function userProfile () : BelongsTo {
         return $this->belongsTo(UserProfile::class);
     }
 

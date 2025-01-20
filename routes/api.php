@@ -11,23 +11,16 @@ use Illuminate\Support\Facades\Route;
 
 use App\Models\User;
 use App\Models\StatusUser;
-use App\Models\UserProfileContact;
 use App\Models\Post;
-use App\Models\PostType;
-use App\Models\ImageUpload;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\UserProfileImageController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\ImageUploadController;
-use App\Http\Controllers\TestCodeController;
 
-Route::post('/test_code/upload_image', [TestCodeController::class, 'uploadImage']);
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AdminManagerPostController;
+use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\PostController;
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     $user_req = $request->user();
-    $user_login = User::with('user_profile', 'user_profile.user_profile_images')->findOrFail($user_req->id);
+    $user_login = User::with('userProfile', 'userProfile.userProfileImage')->findOrFail($user_req->id);
     $token = $user_login->createToken($user_login->username)->plainTextToken;
     return response()->json([
         'user_login' => $user_login,
@@ -47,15 +40,12 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 
-Route::apiResource('/users', UserController::class)->middleware('auth:sanctum');
+Route::apiResource('/users', App\Http\Controllers\UserController::class)->middleware('auth:sanctum');
 
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
 Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile']);
 
-
-
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
-
 Route::prefix('/posts/popularity')->group(function () {
     Route::post('/{userID}/{postID}/{popStatusLike}', [PostController::class, 'postPopLike']);
     Route::post('/{userID}/{postID}/{popStatusDisLike}', [PostController::class, 'postPopDisLike']);
@@ -63,7 +53,7 @@ Route::prefix('/posts/popularity')->group(function () {
 
 Route::get('/post_types', function () {
     return response()->json([
-        'post_types' => PostType::all()
+        'post_types' => App\Models\PostType::all()
     ], 200);
 });
 Route::get('/get_posts', function () {
@@ -85,3 +75,18 @@ Route::get('/get_posts', function () {
 
 Route::post('/posts/report_recover/{userID}', [PostController::class, 'recoverGetPost'])->middleware('auth:sanctum');
 Route::post('/posts/recover/{postID}', [PostController::class, 'recoverPost'])->middleware('auth:sanctum');
+
+
+// ************************************** Route ADMIN ************************************** //
+
+Route::prefix('/admin')->group(function () {
+
+    Route::prefix('/posts')->group(function () {
+        Route::apiResource('/api_resource', AdminManagerPostController::class)
+        ->only([
+            'index', 'create', 'store', 'update', 'show', 'destroy'
+        ]);
+    })->name('admin');
+
+});
+// ->middleware('auth:sanctum');

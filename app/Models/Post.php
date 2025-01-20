@@ -36,11 +36,11 @@ class Post extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function post_types () : BelongsTo {
+    public function postType () : BelongsTo {
         return $this->belongsTo(PostType::class, 'type_id', 'id');
     }
 
-    public function post_deletetion () : BelongsTo {
+    public function postDeletetion () : BelongsTo {
         return $this->belongsTo(PostDeletetion::class, 'post_id', 'id');
     }
 
@@ -48,8 +48,8 @@ class Post extends Model
         return $this->hasMany(PostPopularity::class);
     }
 
-    public function postComment () : HasMany {
-        return $this->MasMany(PostComment::class);
+    public function postComment () : BelongsTo {
+        return $this->belongsTo(PostComment::class, 'post_id', 'id');
     }
 
 }

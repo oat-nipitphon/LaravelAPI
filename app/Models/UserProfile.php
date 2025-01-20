@@ -30,11 +30,11 @@ class UserProfile extends Model
         return $this->HasOne(User::class);
     }
 
-    public function user_profile_contacts () : HasMany {
+    public function userProfileContact () : HasMany {
         return $this->HasMany(UserProfileContact::class, 'profile_id', 'id');
     }
 
-    public function user_profile_images () : HasMany {
+    public function userProfileImage () : HasMany {
         return $this->HasMany(UserProfileImage::class, 'profile_id', 'id');
     }
 

@@ -74,15 +74,15 @@ class User extends Authenticatable
     //     return $this->hasManyThrough(Deployment::class, Environment::class);
     // }
 
-    public function status_user () : BelongsTo {
+    public function statusUser () : BelongsTo {
         return $this->belongsTo(StatusUser::class, 'status_id', 'id');
     }
 
-    public function user_profile () : HasOne {
+    public function userProfile () : HasOne {
         return $this->HasOne(UserProfile::class);
     }
 
-    public function user_logins () : HasOne {
+    public function userLogin () : HasOne {
         return $this->HasOne(UserLogin::class);
     }
 

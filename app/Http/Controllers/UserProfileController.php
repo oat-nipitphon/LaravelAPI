@@ -17,7 +17,7 @@ class UserProfileController extends Controller
     {
         try {
 
-            $user_profile = User::with('user_profile')->get();
+            $user_profile = User::with('userProfile')->get();
 
             return response()->json([
                 'message' => "Laravel api user profile success.",
@@ -147,7 +147,10 @@ class UserProfileController extends Controller
     public function show(Request $request, string $id)
     {
         try {
-            $user_profiles = User::with('status_user', 'user_profile')->where('id', $id)->first();
+            $user_profiles = User::with(
+                    'statusUser', 'userProfile'
+                )->where('id', $id)
+                ->first();
 
             if (!$user_profiles) {
                 return response()->json([
