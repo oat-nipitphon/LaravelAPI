@@ -15,6 +15,7 @@ use App\Models\Post;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminManagerPostController;
+use App\Http\Controllers\AdminManagerUserProfileController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\PostController;
 
@@ -87,6 +88,13 @@ Route::prefix('/admin')->group(function () {
             'index', 'create', 'store', 'update', 'show', 'destroy'
         ]);
     })->name('admin');
+
+    Route::prefix('/userProfiles')->group(function () {
+        Route::apiResource('/api_resource', AdminManagerUserProfileController::class)
+        ->only([
+            'index', 'create', 'store', 'update', 'show', 'destroy'
+        ]);
+    });
 
 });
 // ->middleware('auth:sanctum');
