@@ -60,34 +60,39 @@ class UserProfileController extends Controller
                 'birthDay' => 'required|date',
             ]);
 
-            // ส่วนการจัดการข้อมูลต่อไป (เช่น การอัพเดทข้อมูลในฐานข้อมูล)
             $userProfile = UserProfile::findOrFail($validated['profileID']);
 
             if ($userProfile) {
 
-                // ใช้ข้อมูลที่ผ่านการ validate มาอัพเดท
                 $birthDay = Carbon::parse($validated['birthDay'])->format('Y-m-d');
-                $userProfile->update([
-                    'name' => $validated['name'],
-                    'email' => $validated['email'],
-                    'username' => $validated['userName'],
-                    'status_id' => $validated['statusID'],
+                $dateTimeUpdate = Carbon::now('Asia/Bangkok')->setTimezone('UTC');
+                $userProfile->user->update([
                     'title_name' => $validated['titleName'],
                     'full_name' => $validated['fullName'],
                     'nick_name' => $validated['nickName'],
                     'tel_phone' => $validated['telPhone'],
                     'birth_day' => $birthDay,
+                    'updated_at' => $dateTimeUpdate,
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'username' => $validated['userName'],
+                    'status_id' => $validated['statusID'],
                 ]);
 
                 return response()->json([
                     'message' => 'Profile updated successfully.',
-                    'userProfile' => $userProfile
+                    'userProfile' => $userProfile,
+                    'status' => true
                 ], 200);
+
+            } else {
+
+                return response()->json([
+                    'message' => "Profile update not success.",
+                    'status' => false
+                ], 400);
             }
 
-            return response()->json([
-                'message' => 'User profile not found.'
-            ], 404);
         } catch (\Exception $error) {
             // การจัดการข้อผิดพลาด
             return response()->json([
@@ -148,8 +153,9 @@ class UserProfileController extends Controller
     {
         try {
             $user_profiles = User::with(
-                    'statusUser', 'userProfile'
-                )->where('id', $id)
+                'statusUser',
+                'userProfile'
+            )->where('id', $id)
                 ->first();
 
             if (!$user_profiles) {
@@ -184,7 +190,71 @@ class UserProfileController extends Controller
      */
     public function update(Request $request, UserProfile $userProfile)
     {
-        //
+        try {
+            // ใช้ validate() ในการตรวจสอบข้อมูลจาก request
+            $validated = $request->validate([
+                'userID' => 'required|integer',
+                'name' => 'required|string',
+                'email' => 'required|string',
+                'userName' => 'required|string',
+                'statusID' => 'required|integer',
+                'profileID' => 'required|integer',
+                'titleName' => 'required|string',
+                'fullName' => 'required|string',
+                'nickName' => 'required|string',
+                'telPhone' => 'required|string',
+                'birthDay' => 'required|date',
+            ]);
+
+            // ส่วนการจัดการข้อมูลต่อไป (เช่น การอัพเดทข้อมูลในฐานข้อมูล)
+            $userProfile = UserProfile::findOrFail($validated['profileID']);
+            $dateTimeUpdate = Carbon::now('Asia/Bangkok')->setTimezone('UTC');
+            if ($userProfile) {
+
+                // ใช้ข้อมูลที่ผ่านการ validate มาอัพเดท
+                $birthDay = Carbon::parse($validated['birthDay'])->format('Y-m-d');
+                $userProfile->update([
+                    'title_name' => $validated['titleName'],
+                    'full_name' => $validated['fullName'],
+                    'nick_name' => $validated['nickName'],
+                    'tel_phone' => $validated['telPhone'],
+                    'birth_day' => $birthDay,
+                    'updated_at' => $dateTimeUpdate
+                ]);
+
+                $user = User::findOrFail('id', $userProfile->user_id);
+
+                if ($user) {
+                    $user->update([
+                        'name' => $validated['name'],
+                        'email' => $validated['email'],
+                        'username' => $validated['userName'],
+                        'status_id' => $validated['statusID'],
+                    ]);
+
+                    return response()->json([
+                        'message' => 'Profile updated successfully.',
+                        'userProfile' => $userProfile,
+                        'status' => true
+                    ], 200);
+                } else {
+                    return response()->json([
+                        'message' => "Profile update not success.",
+                        'status' => false
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'User profile not found.'
+            ], 404);
+        } catch (\Exception $error) {
+            // การจัดการข้อผิดพลาด
+            return response()->json([
+                'message' => 'Laravel api function error :: ',
+                'error' => $error->getMessage()
+            ], 500);
+        }
     }
 
     /**
