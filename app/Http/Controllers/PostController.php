@@ -20,7 +20,7 @@ class PostController extends Controller
 
             // status 0=false 1=true
             $posts = Post::with(
-                    'postType', 'user', 'postPopularity'
+                    'postType', 'user', 'postPopularity', 'user.userProfile.userProfileImage',
                 )
                 ->where('deletetion_status', 0)
                 ->orderBy('created_at', 'desc')

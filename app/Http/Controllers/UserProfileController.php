@@ -149,25 +149,38 @@ class UserProfileController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Request $request, string $id)
+    public function show(Request $request, string $id, userProfile $userProfile)
     {
         try {
-            $user_profiles = User::with(
-                'statusUser',
-                'userProfile'
-            )->where('id', $id)
-                ->first();
 
-            if (!$user_profiles) {
+            $userProfile = UserProfile::findOrFail($userProfile->id);
+
+            $userProfile->with(
+                'userProfileContact',
+                'userProfileImage',
+                'user',
+                'user.userLogin',
+                'user.statusUser',
+                'user.posts',
+                'user.userFollowersProfile',
+                'user.userFollowersAccount'
+            )->first();
+
+            if ($userProfile) {
                 return response()->json([
-                    'message' => "laravel user profiles false"
-                ]);
+                    'message' => "laravel get user profile successfully",
+                    'status' => true,
+                    'userProfile' => $userProfile
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => "laravel get user profile not success.",
+                    'status' => false,
+                    'userProfile' => $userProfile
+                ], 400);
             }
 
-            return response()->json([
-                'message' => "laravel get user profile function show success.",
-                'userProfile' => $user_profiles
-            ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "laravel user profile function show error",
