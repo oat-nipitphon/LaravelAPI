@@ -15,7 +15,17 @@ class AdminManagerUserProfileController extends Controller
     {
         try {
 
-            $userProfiles = UserProfile::all();
+            $userProfiles = UserProfile::with(
+                    'userProfileContact',
+                    'userProfileImage',
+                    'user',
+                    'user.userLogin',
+                    'user.statusUser',
+                    'user.posts',
+                    'user.userFollowersProfile',
+                    'user.userFollowersAccount'
+                )
+                ->get();
 
             if (!$userProfiles) {
                 return response()->json([

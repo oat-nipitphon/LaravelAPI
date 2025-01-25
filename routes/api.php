@@ -83,14 +83,14 @@ Route::post('/posts/recover/{postID}', [PostController::class, 'recoverPost'])->
 Route::prefix('/admin')->group(function () {
 
     Route::prefix('/posts')->group(function () {
-        Route::apiResource('/api_resource', AdminManagerPostController::class)
+        Route::apiResource('/manager', AdminManagerPostController::class)
         ->only([
             'index', 'create', 'store', 'update', 'show', 'destroy'
         ]);
     })->name('admin');
 
     Route::prefix('/userProfiles')->group(function () {
-        Route::apiResource('/api_resource', AdminManagerUserProfileController::class)
+        Route::apiResource('/manager', AdminManagerUserProfileController::class)
         ->only([
             'index', 'create', 'store', 'update', 'show', 'destroy'
         ]);
