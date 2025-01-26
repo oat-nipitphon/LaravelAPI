@@ -26,6 +26,28 @@ class UserController extends Controller
         }
     }
 
+    public function popProfile (Request $req, user $user, string $userID) {
+        try {
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "Laravel pop profile function error",
+                'error' => $error->getMessage()
+            ], 500);
+        }
+    }
+
+    public function followersAccount (Request $req, user $user, string $userID) {
+        try {
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "Laravel pop profile function error",
+                'error' => $error->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Store a newly created resource in storage.
      */

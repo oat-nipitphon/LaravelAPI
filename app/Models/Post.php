@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 
 class Post extends Model
 {
 
-    use HasApiTokens;
+    use HasFactory,HasApiTokens;
 
     /**
      * The table associated with the model.
@@ -34,6 +35,10 @@ class Post extends Model
 
     public function user () : BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    public function postImage () : HasMany {
+        return $this->hasMany(PostImage::class);
     }
 
     public function postType () : BelongsTo {

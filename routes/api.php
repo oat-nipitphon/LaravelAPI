@@ -18,6 +18,12 @@ use App\Http\Controllers\AdminManagerPostController;
 use App\Http\Controllers\AdminManagerUserProfileController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\ImageFileUploadController;
+
+Route::apiResource('/imageFileUploads', ImageFileUploadController::class)
+->only(
+    'index', 'create', 'store', 'update', 'show', 'destroy'
+);
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     $user_req = $request->user();
@@ -43,6 +49,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::apiResource('/users', App\Http\Controllers\UserController::class)->middleware('auth:sanctum');
 
+
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
 Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile']);
 
@@ -60,7 +67,7 @@ Route::get('/post_types', function () {
 Route::get('/get_posts', function () {
     try {
 
-        $posts = Post::with('post_types')->get();
+        $posts = Post::with('postType', 'postImage')->get();
 
         return response()->json([
             'message' => "Laravel api get posts success.",

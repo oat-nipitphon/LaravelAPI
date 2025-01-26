@@ -3,25 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class ImageUpload extends Model
+class ImageFileUpload extends Model
 {
-
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'image_uploads';
+    use HasFactory;
+    protected $table = "image_file_uploads";
     protected $fillable = [
         'id',
-        'user_id',
         'profile_id',
         'image_path',
         'image_name',
         'image_data',
         'image_url',
+        'created_at',
+        'updated_at'
     ];
-
-
 }

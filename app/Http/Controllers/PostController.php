@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\PostDeletetion;
 use App\Models\PostPopularity;
+use App\Models\PostImage;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Faker\Core\DateTime;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -20,8 +23,12 @@ class PostController extends Controller
 
             // status 0=false 1=true
             $posts = Post::with(
-                    'postType', 'user', 'postPopularity', 'user.userProfile.userProfileImage',
-                )
+                'postImage',
+                'postType',
+                'user',
+                'postPopularity',
+                'user.userProfile.userProfileImage',
+            )
                 ->where('deletetion_status', 0)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -31,6 +38,7 @@ class PostController extends Controller
             return response()->json([
                 'message' => "Laravel api get posts success.",
                 'posts' => $posts
+
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -46,39 +54,69 @@ class PostController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
-                'userID' => 'required|integer',
+
+            $validated = $request->validate([
+                'userID' => 'required|string',
                 'title' => 'required|string',
                 'content' => 'required|string',
                 'refer' => 'required|string',
-                'typeID' => 'required|integer',
+                'typeID' => 'required|string',
+                'image' => 'nullable|image|max:2048'
             ]);
 
             $dateTimeCreatePost = Carbon::now('Asia/Bangkok')->setTimezone('UTC');
-            $post = new Post();
-            $post->create([
-                'post_title' => $request->title,
-                'post_content' => $request->content,
-                'refer' => $request->refer,
-                'type_id' => $request->typeID,
-                'user_id' => $request->userID,
+
+            $post = Post::create([
+                'post_title' => $validated['title'],
+                'post_content' => $validated['content'],
+                'refer' => $validated['refer'],
+                'type_id' => $validated['typeID'],
+                'user_id' => $validated['userID'],
                 'deletetion_status' => 0, // status 0 == false // status 1 == true
                 'created_at' => $dateTimeCreatePost,
             ]);
 
             if (!$post) {
-                dd($request, $post);
+                return response()->json([
+                    'message' => 'Failed to create the post. Please try again.',
+                ], 500);
+            }
+
+            if ($request->hasFile('image')) {
+
+                // Move file image
+                $validated['image'] = $request->file('image')->store('images', 'public');
+
+                $postImage = PostImage::create([
+                    'post_id' => $post->id,
+                    'image_name' => $validated['image']
+                ]);
+
+                if (!$postImage) {
+                    return response()->json([
+                        'message' => 'Failed to save the image. Post created without image.',
+                        'post' => $post
+                    ], 206);
+                }
             }
 
             return response()->json([
-                'message' => "laravel function store success.",
-                'createPostNew' => $post
+                'message' => 'Post created successfully!',
+                'post' => $post->load('postImage') // load model Relationships
             ], 201);
+
         } catch (\Exception $e) {
+
+            Log::error('Error in storing post: ', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
-                'message' => "laravel function store error :",
+                'message' => "laravel post controller function store error :",
                 'error' => $e->getMessage()
             ], 400);
+
         }
     }
 
@@ -236,7 +274,6 @@ class PostController extends Controller
             }
 
             dd($statusRecoverPost);
-
         } catch (\Exception $e) {
             return response()->json([
                 'messageError' => "Laravel recover prost error" . $e->getMessage()
@@ -244,7 +281,8 @@ class PostController extends Controller
         }
     }
 
-    public function postPopLike(string $userID, string $postID, string $popStatusLike) {
+    public function postPopLike(string $userID, string $postID, string $popStatusLike)
+    {
         try {
             // Check if the user already reacted
             $existingReaction = PostPopularity::where('user_id', $userID)
@@ -281,7 +319,8 @@ class PostController extends Controller
         }
     }
 
-    public function postPopDisLike(string $userID, string $postID, string $popStatusDisLike) {
+    public function postPopDisLike(string $userID, string $postID, string $popStatusDisLike)
+    {
         try {
             $existingReaction = PostPopularity::where('user_id', $userID)
                 ->where('post_id', $postID)
@@ -314,6 +353,4 @@ class PostController extends Controller
             ], 400);
         }
     }
-
-
 }
