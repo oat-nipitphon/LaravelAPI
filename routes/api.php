@@ -53,12 +53,20 @@ Route::apiResource('/users', App\Http\Controllers\UserController::class)->middle
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
 Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile']);
 
+// Post
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
+
+// Post Popularity
 Route::prefix('/posts/popularity')->group(function () {
     Route::post('/{userID}/{postID}/{popStatusLike}', [PostController::class, 'postPopLike']);
     Route::post('/{userID}/{postID}/{popStatusDisLike}', [PostController::class, 'postPopDisLike']);
 })->middleware('auth:sanctum');
 
+// Post Recover
+Route::post('/posts/report_recover/{userID}', [PostController::class, 'recoverGetPost'])->middleware('auth:sanctum');
+Route::post('/posts/recover/{postID}', [PostController::class, 'recoverPost'])->middleware('auth:sanctum');
+
+// Post type
 Route::get('/post_types', function () {
     return response()->json([
         'post_types' => App\Models\PostType::all()
@@ -81,8 +89,7 @@ Route::get('/get_posts', function () {
     }
 });
 
-Route::post('/posts/report_recover/{userID}', [PostController::class, 'recoverGetPost'])->middleware('auth:sanctum');
-Route::post('/posts/recover/{postID}', [PostController::class, 'recoverPost'])->middleware('auth:sanctum');
+
 
 
 // ************************************** Route ADMIN ************************************** //

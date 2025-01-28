@@ -29,7 +29,8 @@ class PostController extends Controller
                 'postPopularity',
                 'user.userProfile.userProfileImage',
             )
-                ->where('deletetion_status', 0)
+                ->where('deletetion_status', 'false')
+                ->where('block_status', 'false')
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -72,7 +73,8 @@ class PostController extends Controller
                 'refer' => $validated['refer'],
                 'type_id' => $validated['typeID'],
                 'user_id' => $validated['userID'],
-                'deletetion_status' => 0, // status 0 == false // status 1 == true
+                'deletetion_status' => 'false', // status 0 == false // status 1 == true
+                'block_status' => 'false',
                 'created_at' => $dateTimeCreatePost,
             ]);
 
@@ -206,7 +208,7 @@ class PostController extends Controller
             $post = Post::findOrFail($id);
 
             $post->update([
-                'deletetion_status' => 1,
+                'deletetion_status' => 'true',
             ]);
 
             $dateTime = Carbon::now();
@@ -214,7 +216,7 @@ class PostController extends Controller
                 ['post_id' => $post->id],
                 [
                     'date_time_delete' => $dateTime,
-                    'deletetion_status' => 1,
+                    'deletetion_status' => 'true',
                 ]
             );
 
@@ -235,18 +237,22 @@ class PostController extends Controller
 
             $recoverPosts = Post::with('postType')
                 ->where('user_id', $userID)
-                ->where('deletetion_status', 1)
+                ->where('deletetion_status', 'true')
+                ->where('block_status', 'false')
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            if (!$recoverPosts) {
+            if ($recoverPosts) {
+                return response()->json([
+                    'message' => "Laravel recoverPosts GET success.",
+                    'recoverPosts' => $recoverPosts
+                ], 200);
+            } else {
                 dd($recoverPosts);
             }
 
-            return response()->json([
-                'message' => "Laravel recoverPosts GET success.",
-                'recoverPosts' => $recoverPosts
-            ], 200);
+
+
         } catch (\Exception $e) {
             return response()->json([
                 'messageError' => "Laravel recover prost error" . $e->getMessage()
@@ -262,7 +268,7 @@ class PostController extends Controller
 
             if ($statusRecoverPost) {
                 $statusRecoverPost->update([
-                    'deletetion_status' => 0
+                    'deletetion_status' => 'false'
                 ]);
 
                 if ($statusRecoverPost) {
@@ -271,9 +277,10 @@ class PostController extends Controller
                         'post' => $statusRecoverPost
                     ], 201);
                 }
+            } else {
+                dd($statusRecoverPost);
             }
 
-            dd($statusRecoverPost);
         } catch (\Exception $e) {
             return response()->json([
                 'messageError' => "Laravel recover prost error" . $e->getMessage()

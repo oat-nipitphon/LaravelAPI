@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('image_file_uploads', function (Blueprint $table) {
+        Schema::create('file_entries', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('profile_id')->nullable();
-            $table->string('image_path')->nullabel();
-            $table->string('image_name')->nullabel();
-            $table->binary('image_data')->nullable();
-            $table->string('image_url')->nullabel();
+            $table->string('filename');
+            $table->string('mime');
+            $table->string('path');
+            $table->integer('size');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('image_file_uploads');
+        Schema::dropIfExists('file_entries');
     }
 };
