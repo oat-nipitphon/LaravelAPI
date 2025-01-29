@@ -101,7 +101,7 @@ Route::prefix('/admin')->group(function () {
         ->only([
             'index', 'create', 'store', 'update', 'show', 'destroy'
         ]);
-    })->name('admin');
+    });
 
     Route::prefix('/userProfiles')->group(function () {
         Route::apiResource('/manager', AdminManagerUserProfileController::class)
@@ -110,5 +110,4 @@ Route::prefix('/admin')->group(function () {
         ]);
     });
 
-});
-// ->middleware('auth:sanctum');
+})->middleware('auth:sanctum');
