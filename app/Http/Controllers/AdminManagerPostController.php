@@ -127,7 +127,6 @@ class AdminManagerPostController extends Controller
             return response()->json([
                 'message' => "Laravel API delete success",
             ], 200);
-
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack(); // ย้อนกลับการเปลี่ยนแปลงหากมีข้อผิดพลาดเกี่ยวกับ Database
 
@@ -147,35 +146,31 @@ class AdminManagerPostController extends Controller
     {
         try {
 
-            $post = Post::findOrFail($postID);
+            $post = new Post();
 
-            if ($post) {
+            if ($post && $postID && $blockStatus) {
 
-                if ($blockStatus === "true") {
-                    $confirm = $post->updateOrCreate([
-                        ['id' => $post->id],
-                        [
+
+                if ($blockStatus === "Block") {
+                    $actionText = "true";
+                    $post->where('id', $postID)
+                        ->update([
                             'block_status' => "true"
-                        ]
-                    ]);
-                }
-
-                if ($blockStatus === "false") {
-                    $confirm = $post->updateOrCreate([
-                        ['id' => $post->id],
-                        [
+                        ]);
+                } else if ($blockStatus === "Unblock") {
+                    $actionText = "false";
+                    $post->where('id', $postID)
+                        ->update([
                             'block_status' => "false"
-                        ]
-                    ]);
-                }
-
-                if (!$confirm) {
-                    dd("error update or create block status", $confirm);
+                        ]);
+                } else {
+                    dd($blockStatus);
                 }
 
                 return response()->json([
-                    'message' => "Laravel api block post success",
-                    'post' => $post
+                    'message' => "Laravel api block_status post success",
+                    'post' => $post,
+                    'confirm' => $actionText
                 ], 200);
             } else {
                 return response()->json([
