@@ -20,7 +20,7 @@ class PostDeletetion extends Model
 
 
     public function post () : HasOne {
-        return $this->hasOne(Post::class);
+        return $this->hasOne(Post::class, 'id', 'post_id');
     }
 
 }

@@ -101,6 +101,7 @@ Route::prefix('/admin')->group(function () {
         ->only([
             'index', 'create', 'store', 'update', 'show', 'destroy'
         ]);
+        Route::post('/blockOrUnBlockPost/{postID}/{blockStatus}', [AdminManagerPostController::class, 'blockOrUnBlockPost']);
     });
 
     Route::prefix('/userProfiles')->group(function () {

@@ -5,6 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AdminManagerPost;
 use App\Models\Post;
+use App\Models\PostDeletetion;
+use App\Models\PostImage;
+use App\Models\PostPopularity;
+use App\Models\PostComment;
+use App\Models\PostCommentPopularity;
+use Illuminate\Support\Facades\DB;
 
 class AdminManagerPostController extends Controller
 {
@@ -21,8 +27,8 @@ class AdminManagerPostController extends Controller
                 'postDeletetion',
                 'postPopularity',
                 'postComment'
-                )
-            ->get();
+            )
+                ->get();
 
             if (!$posts) {
                 return [
@@ -37,11 +43,10 @@ class AdminManagerPostController extends Controller
                     200
                 ];
             }
-
         } catch (\Exception $e) {
             return [
                 'message' => "Laravel admin api manager post error" .
-                $e->getMessage(),
+                    $e->getMessage(),
                 500
             ];
         }
@@ -60,26 +65,17 @@ class AdminManagerPostController extends Controller
      */
     public function show(AdminManagerPost $adminManagerPost, string $postID)
     {
-        // try {
+        try {
 
-        //     $post = Post::with('')->where('id', $postID)->first();
+            $post = Post::with(['user', 'postImages', 'postType', 'postDeletetions', 'postPopularities', 'postComments'])
+                ->findOrFail($postID);
 
-        //     if ($post) {
-        //         return response()->json([
-        //             'message' => "Laravel api get response show success",
-        //             'post' => $post
-        //         ], 200);
-        //     } else {
-        //         return response()->json([
-        //             'message' => "Laravel api get response show false"
-        //         ]);
-        //     }
-
-        // } catch (\Exception $error) {
-        //     return response()->json([
-        //         'message' => "Laravel api function show error". $error->getMessage()
-        //     ], 400);
-        // }
+            return response()->json($post);
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "Laravel api function show error" . $error->getMessage()
+            ], 400);
+        }
     }
 
     /**
@@ -115,28 +111,40 @@ class AdminManagerPostController extends Controller
     public function destroy(AdminManagerPost $adminManagerPost, string $postID)
     {
         try {
+            DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
 
             $post = Post::findOrFail($postID);
 
             if ($post) {
+                PostImage::where('post_id', $postID)->delete();
+                PostPopularity::where('post_id', $postID)->delete();
+                PostDeletetion::where('post_id', $postID)->delete();
                 $post->delete();
-                return response()->json([
-                    'message' => "Laravel api delete success",
-                ], 200);
-            } else {
-                return response()->json([
-                    'message' => "Laravel api delete false"
-                ], 201);
             }
 
-        } catch (\Exception $error) {
+            DB::commit(); // บันทึกการเปลี่ยนแปลง
+
             return response()->json([
-                'message' => "Laravel api function destroy error". $error->getMessage()
+                'message' => "Laravel API delete success",
+            ], 200);
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack(); // ย้อนกลับการเปลี่ยนแปลงหากมีข้อผิดพลาดเกี่ยวกับ Database
+
+            return response()->json([
+                'message' => "Database error: " . $e->getMessage()
+            ], 500);
+        } catch (\Exception $error) {
+            DB::rollBack(); // ย้อนกลับการเปลี่ยนแปลงหากมีข้อผิดพลาดอื่น ๆ
+
+            return response()->json([
+                'message' => "Laravel API function destroy error: " . $error->getMessage()
             ], 400);
         }
     }
 
-    public function blockOrUnblockPost (string $postID, string $blockStatus) {
+    public function blockOrUnblockPost(string $postID, string $blockStatus)
+    {
         try {
 
             $post = Post::findOrFail($postID);
@@ -169,18 +177,15 @@ class AdminManagerPostController extends Controller
                     'message' => "Laravel api block post success",
                     'post' => $post
                 ], 200);
-
             } else {
                 return response()->json([
                     'message' => "Laravel api block post false"
                 ], 201);
             }
-
         } catch (\Exception $error) {
             return response()->json([
-                'message' => "Laravel api function blockOrUnblockPost error". $error->getMessage()
+                'message' => "Laravel api function blockOrUnblockPost error" . $error->getMessage()
             ], 400);
         }
     }
-
 }
