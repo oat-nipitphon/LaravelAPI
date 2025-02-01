@@ -15,29 +15,57 @@ class AdminManagerUserProfileController extends Controller
     {
         try {
 
-            $userProfiles = UserProfile::with(
-                    'userProfileContact',
-                    'userProfileImage',
-                    'user',
-                    'user.userLogin',
-                    'user.statusUser',
-                    'user.posts',
-                    'user.userFollowersProfile',
-                    'user.userFollowersAccount'
-                )
-                ->get();
+            $userProfiles = UserProfile::with([
+                'userProfileImage',
+                'user',
+                'user.userProfileContact',
+                'user.statusUser',
+                'user.posts',
+                'user.userFollowersProfile',
+                'user.userFollowersAccount',
+                'user.userLogin',
+                'user.latestUserLogin',
+            ])
+                ->get()
+                ->map(function ($profile) {
+                    return [
+                        'id' => $profile->id,
+                        'full_name' => $profile->full_name,
+                        'title_name' => $profile->title_name,
+                        'user' => [
+                            'id' => $profile->user->id,
+                            'name' => $profile->user->name,
+                            'email' => $profile->user->email,
+                            'status_user' => $profile->user->statusUser->status_name ?? null,
+                            'posts' => $profile->user->posts, // เอาทั้งหมด
+                            'latest_post' => $profile->user->posts->sortByDesc('created_at')->first(), // เอาโพสต์ล่าสุด
+                            'user_login' => $profile->user->userLogin->sortByDesc('created_at')->first() ?? null, // เอาข้อมูล login ล่าสุด
+                        ],
+                        'user_contact' => $profile->user->userProfileContact->map(function ($contact) {
+                            return [
+                                'id' => $contact->id,
+                                'contact_name' => $contact->contact_name,
+                                'contact_link_path' => $contact->contact_link_path,
+                                'contact_icon_name' => $contact->contact_icon_name,
+                                'contact_icon_url' => $contact->contact_icon_url,
+                                'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,' . base64_encode($contact->contact_icon_data) : null, // ✅ แก้ไขตรงนี้
+                            ];
+                        }),
+                    ];
+                });
 
-            if (!$userProfiles) {
+            if ($userProfiles) {
                 return response()->json([
-                    'message' => "Laravel admin manager user profile false.",
+                    'message' => "Laravel get user profile detail success",
                     'userProfiles' => $userProfiles
-                ], 400);
+                ], 200);
+
             }
 
             return response()->json([
-                'message' => "Laravel admin manager user profile success.",
+                'message' => "Laravel admin manager user profile false.",
                 'userProfiles' => $userProfiles
-            ], 200);
+            ], 400);
 
         } catch (\Exception $e) {
             return response()->json([

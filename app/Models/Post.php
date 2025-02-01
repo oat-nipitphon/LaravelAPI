@@ -38,7 +38,7 @@ class Post extends Model
     }
 
     public function postImage () : HasMany {
-        return $this->hasMany(PostImage::class);
+        return $this->hasMany(PostImage::class, 'post_id', 'id');
     }
 
     public function postType () : BelongsTo {

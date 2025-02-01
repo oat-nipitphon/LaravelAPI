@@ -65,7 +65,7 @@ class PostController extends Controller
                 'image' => 'nullable|image|max:2048'
             ]);
 
-            $dateTimeCreatePost = Carbon::now('Asia/Bangkok')->setTimezone('UTC');
+            $dateTimeCreatePost = Carbon::now('Asia/Bangkok')->setTimezone('UTC+7');
 
             $post = Post::create([
                 'post_title' => $validated['title'],
@@ -241,7 +241,7 @@ class PostController extends Controller
                 ->where('block_status', 'false')
                 ->orderBy('created_at', 'desc')
                 ->get();
-
+            // dd($recoverPosts);
             if ($recoverPosts) {
                 return response()->json([
                     'message' => "Laravel recoverPosts GET success.",

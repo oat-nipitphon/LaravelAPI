@@ -7,9 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserProfileContact extends Model
 {
+    protected $table = "user_profile_contacts";
     protected $fillable = [
         'id',
-        'profile_id',
+        'user_id',
         'contact_name',
         'contact_link_path',
         'contact_icon_name',
@@ -20,7 +21,7 @@ class UserProfileContact extends Model
     ];
 
     public function userProfile () : BelongsTo {
-        return $this->belongsTo(UserProfile::class);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
 }

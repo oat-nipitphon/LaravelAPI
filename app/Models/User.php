@@ -82,8 +82,13 @@ class User extends Authenticatable
         return $this->HasOne(UserProfile::class);
     }
 
-    public function userLogin () : HasOne {
-        return $this->HasOne(UserLogin::class);
+    public function userLogin (): HasMany {
+        return $this->hasMany(UserLogin::class, 'user_id', 'id');
+    }
+
+    // User status login latest
+    public function latestUserLogin(): HasOne {
+        return $this->hasOne(UserLogin::class, 'user_id', 'id')->latestOfMany();
     }
 
     public function posts () : HasMany {
@@ -96,6 +101,10 @@ class User extends Authenticatable
 
     public function userFollowersAccount () : HasMany {
         return $this->HasMany(UserFollowersAccount::class);
+    }
+
+    public function userProfileContact () : HasMany {
+        return $this->HasMany(UserProfileContact::class, 'user_id', 'id');
     }
 
 }

@@ -34,43 +34,45 @@ class AuthController extends Controller
 
             if ($user) {
 
-                $dateTimeUpdate = Carbon::now('Asia/Bangkok')->setTimezone('UTC');
+                $dateTimeNow = Carbon::now('Asia/Bangkok')->setTimezone('UTC+7');
                 UserProfile::create([
                     'user_id' => $user->id,
                     'title_name' => "",
                     'full_name' => "",
                     'nick_name' => "",
-                    'updated_at' => $dateTimeUpdate
+                    'updated_at' => $dateTimeNow
                 ]);
 
                 $token = $user->createToken($user->username);
 
-                $dateTimeLogin = Carbon::now()->format('Y-m-d');
-                $user_login = UserLogin::create([
-                    'user_id' => $user->id,
-                    'user_status_login_number' => 1,
-                    'user_status_login_name' => "online",
-                    'user_date_time_login' => $dateTimeLogin
-                ]);
+                if ($user) {
 
+                    $userLogin = UserLogin::create([
+                        'user_id' => $user->id,
+                        'status_login' => "online",
+                        'created_at' => $dateTimeNow,
+                        'updated_at' => $dateTimeNow,
+                    ]);
 
-                if ($user->id && $user_login->user_id) {
-                    return response()->json([
-                        'user' => $user,
-                        'token' => $token->plainTextToken,
-                        'message' => 'User registered successfully.',
-                        'status' => true
-                    ], 201);
+                    if ($userLogin) {
+
+                        return response()->json([
+                            'message' => "Login successfullry.",
+                            'token' => $token,
+                            'status' => true,
+                            'user' => $user,
+                            'user_login' => $userLogin,
+
+                        ], 200);
+                    }
                 }
-            } else {
-                return response()->json([
-                    'message' => "Laravel register false",
-                    'status' => false,
-                    'user' => $user
-                ]);
             }
 
-
+            return response()->json([
+                'message' => "Laravel register false",
+                'status' => false,
+                'user' => $user
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -141,31 +143,38 @@ class AuthController extends Controller
 
             $token = $user->createToken($user->username)->plainTextToken;
 
-            $dateTimeLogin = Carbon::now()->format('Y-m-d');
-            $userLogin = UserLogin::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'user_status_login_number' => 1,
-                    'user_status_login_name' => "online",
-                    'user_date_time_login' => $dateTimeLogin
-                ]
-            );
 
-            if ($userLogin) {
-                return response()->json([
-                    'message' => "Login successfullry.",
-                    'token' => $token,
-                    'status' => true,
-                    'user' => $user,
-                    'user_login' => $userLogin,
-                ], 200);
-            } else {
-                return response()->json([
-                    'message' => "Login not success.",
-                    'status' => false,
-                    'user_login' => $userLogin,
-                ], 400);
+            if ($user) {
+
+                $dateTimeNow = Carbon::now('Asia/Bangkok')->setTimezone('UTC+7');
+                $userLogin = UserLogin::create([
+                    'user_id' => $user->id,
+                    'status_login' => "online",
+                    'created_at' => $dateTimeNow,
+                    'updated_at' => $dateTimeNow,
+                ]);
+
+                if ($userLogin) {
+
+                    return response()->json([
+                        'message' => "Login successfullry.",
+                        'token' => $token,
+                        'status' => true,
+                        'user' => $user,
+                        'user_login' => $userLogin,
+
+                    ], 200);
+
+                }
+
             }
+
+            return response()->json([
+                'message' => "Login not success.",
+                'status' => false,
+                'user_login' => $userLogin,
+            ], 400);
+
 
         } catch (\Exception $e) {
             return response()->json([
@@ -179,33 +188,42 @@ class AuthController extends Controller
     {
         try {
 
+
             if ($user = $request->user()) {
-                $userLogin = UserLogin::where('user_id', $user->id)->first();
-                if ($userLogin) {
-                    $dateTimeLogin = Carbon::now()->format('Y-m-d');
-                    $userLogin = UserLogin::updateOrCreate(
-                        ['user_id' => $user->id],
-                        [
-                            'user_status_login_number' => 0,
-                            'user_status_login_name' => "offline",
-                            'user_date_time_login' => $dateTimeLogin
-                        ]
-                    );
+
+
+                if ($user) {
+
+                    $userLogin = UserLogin::where('user_id', $user->id)->find();
+
+                    $dateTimeNow = Carbon::now('Asia/Bangkok')->setTimezone('UTC+7');
+
+                    if ($userLogin) {
+
+                        $userLogin->update([
+                            'status_login' => "offline",
+                            'updated_at' => $dateTimeNow
+                        ]);
+
+                        $user->tokens()->delete();
+
+                        return response()->json([
+                            'message' => "Login successfullry.",
+                            'status' => true,
+                            'user' => $user,
+                            'user_login' => $userLogin,
+
+                        ], 200);
+                    }
+
                 }
-
-                $user->tokens()->delete(); // Revoke all tokens for the user
-
-                return response()->json([
-                    'message' => 'Logged out successfully.',
-                    'status' => true
-                ], 200);
-            } else {
-                return response()->json([
-                    'message' => 'Logged out not success.',
-                    'status' => false
-                ], 400);
             }
 
+            return response()->json([
+                'message' => "Login not success.",
+                'status' => false,
+                'user_login' => $userLogin,
+            ], 400);
 
         } catch (\Exception $e) {
             return response()->json([

@@ -111,4 +111,5 @@ Route::prefix('/admin')->group(function () {
         ]);
     });
 
-})->middleware('auth:sanctum');
+});
+// ->middleware('auth:sanctum');
