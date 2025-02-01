@@ -27,7 +27,7 @@ class UserProfile extends Model
     ];
 
     public function user () : HasOne {
-        return $this->HasOne(User::class, 'user_id', 'id');
+        return $this->HasOne(User::class);
     }
 
     public function userProfileImage () : HasMany {

@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('file_entries', function (Blueprint $table) {
+        Schema::create('user_profile_images', function (Blueprint $table) {
             $table->id();
-            $table->string('filename');
-            $table->string('mime');
-            $table->string('path');
-            $table->integer('size');
+            $table->foreignId('profile_id')->constrained('user_profiles')->onDelete('cascade');
+            $table->string('image_path');
+            $table->string('image_name');
+            $table->binary('image_data')->nullable(); // Or text if you're storing image data
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('file_entries');
+        Schema::dropIfExists('user_profile_images');
     }
 };

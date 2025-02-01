@@ -8,6 +8,8 @@ use App\Models\UserProfileImage;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Intervention\Image\Laravel\Facades\Image;
+
 
 class UserProfileController extends Controller
 {
@@ -17,9 +19,6 @@ class UserProfileController extends Controller
     public function index()
     {
         try {
-
-            // $user_profile = User::with('userProfile')->get();
-            // $user_profile = new User();
 
             $user_profile = User::with(
                 'userProfileContact',
@@ -36,6 +35,7 @@ class UserProfileController extends Controller
                 'message' => "Laravel api user profile success.",
                 'user_profile' => $user_profile
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel profile controller error",
@@ -58,7 +58,7 @@ class UserProfileController extends Controller
     public function store(Request $request)
     {
         try {
-            // ใช้ validate() ในการตรวจสอบข้อมูลจาก request
+
             $validated = $request->validate([
                 'userID' => 'required|integer',
                 'name' => 'required|string',
@@ -97,15 +97,15 @@ class UserProfileController extends Controller
                     'userProfile' => $userProfile,
                     'status' => true
                 ], 200);
-            } else {
 
-                return response()->json([
-                    'message' => "Profile update not success.",
-                    'status' => false
-                ], 400);
             }
+
+            return response()->json([
+                'message' => "Profile update not success.",
+                'status' => false
+            ], 400);
+
         } catch (\Exception $error) {
-            // การจัดการข้อผิดพลาด
             return response()->json([
                 'message' => 'Laravel api function error :: ',
                 'error' => $error->getMessage()
@@ -113,58 +113,57 @@ class UserProfileController extends Controller
         }
     }
 
-    public function uploadImageProfile(Request $req)
+    public function uploadImageProfile(Request $request)
     {
         try {
-            // Validate the request
-            $req->validate([
+
+            $request->validate([
                 'profileID' => 'required|integer',
                 'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:10000',  // 10MB max
             ]);
 
-            if (!$req->hasFile('imageFile')) {
+            if ($request->hasFile('imageFile')) {
+
+                $imageFile = $request->file('imageFile');
+                $imagePath = $imageFile->store('profile_images', 'public');
+                $imageName = $imageFile->getClientOriginalName();
+                $imageNameNew = time() . " - " . $imageName;
+
+                // File image blob binary
+                $imageData = file_get_contents($imageFile->getRealPath());
+                $imageDataBase64 = base64_encode($imageData);
+
+                // File image resize
+                // $imageResize = Image::read($imageFile->path());
+                // $imageResize->resize(100, 100, function ($constraint) {
+                //     $constraint->aspectRatio();
+                // })->save($imagePath. '/' .$imageNameNew);
+
+                $userProfile = UserProfile::findOrFail($request->profileID);
+
+                UserProfileImage::create([
+                    'profile_id' => $userProfile->id,
+                    'image_path' => $imagePath,
+                    'image_name' => $imageNameNew,
+                    'image_data' => $imageDataBase64,
+                ]);
+
                 return response()->json([
-                    'message' => "No image file provided.",
-                ], 400);
+                    'message' => "Laravel upload image profile successfully.",
+                    'image_data' => $imageDataBase64,
+                ], 201);
+
             }
 
-            // Handle the image file
-            $imageFile = $req->file('imageFile');
-            $imagePath = $imageFile->store('profile_images', 'public');  // Store image on 'public' disk
-            $imageName = $imageFile->getClientOriginalName();
-            $imageNameNew = time() . " - " . $imageName;  // Unique name with timestamp
-
-            // Read image file content for blob storage
-            $imageData = file_get_contents($imageFile->getRealPath());
-            $imageDataBase64 = base64_encode($imageData);  // Base64 encode the image data
-
-            // Find the user profile
-            // $userProfile = UserProfile::findOrFail($req->profileID);
-            // if ($userProfile) {
-            //     $userProfile->update([
-            //         'profile_id' => $req->profileID,
-            //         'image_path' => $imagePath,
-            //         'image_name' => $imageNameNew,
-            //         'image_data' => $imageDataBase64,  // Save base64 encoded da
-            //     ]);
-            // }
-
-            // Now store or return the base64 encoded image
-            UserProfileImage::create([
-                'profile_id' => $req->profileID,
-                'image_path' => $imagePath,
-                'image_name' => $imageNameNew,
-                'image_data' => $imageDataBase64,  // Save base64 encoded data
-            ]);
 
             return response()->json([
-                'message' => "Image uploaded successfully.",
-                'image_url' => asset('storage/' . $imagePath),  // Return URL of the image
-                'image_data' => $imageDataBase64,  // Return base64 encoded image data (if needed)
-            ], 201);
+                'message' => "No image file provided.",
+            ], 400);
+
+
 
         } catch (\Exception $e) {
-            // Log the error for debugging purposes (optional)
+
             Log::error('Image upload error: ' . $e->getMessage());
 
             return response()->json([
@@ -173,53 +172,6 @@ class UserProfileController extends Controller
             ], 500);
         }
     }
-
-
-    // public function uploadImageProfile(Request $req)
-    // {
-    //     try {
-
-    //         // Validate the request
-    //         $req->validate([
-    //             'profileID' => 'required|integer',
-    //             'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:10000',
-    //         ]);
-
-    //         // Find the user profile
-    //         $userProfile = UserProfile::findOrFail($req->profileID);
-
-    //         if (!$req->hasFile('imageFile')) {
-    //             return response()->json([
-    //                 'message' => "No image file provided.",
-    //             ], 400);
-    //         }
-
-    //         // Handle the image file
-    //         $imageFile = $req->file('imageFile');
-    //         $imagePath = $imageFile->store('profile_images', 'public');
-    //         $imageName = $imageFile->getClientOriginalName();
-    //         $imageNameNew = time() . " - " . $imageName;
-
-    //         $imageData = file_get_contents($imageFile->getRealPath());
-
-    //         // Save the image data in the database
-    //         UserProfileImage::create([
-    //             'profile_id' => $req->profileID,
-    //             'image_path' => $imagePath,
-    //             'image_name' => $imageNameNew,
-    //             'image_data' => $imageData,
-    //         ]);
-
-    //         return response()->json([
-    //             'message' => "Image uploaded successfully.",
-    //         ], 201);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => "An error occurred.",
-    //             'error' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
 
     /**
      * Display the specified resource.
@@ -250,7 +202,8 @@ class UserProfileController extends Controller
                         'contact_link_path' => $contact->contact_link_path,
                         'contact_icon_name' => $contact->contact_icon_name,
                         'contact_icon_url' => $contact->contact_icon_url,
-                        'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,' . base64_encode($contact->contact_icon_data) : null, // ✅ Fixed here
+                        'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
+                        . base64_encode($contact->contact_icon_data) : null,
                     ];
                 }),
                 'userProfile' => [
@@ -265,6 +218,14 @@ class UserProfileController extends Controller
                     'id' => $user->statusUser->id,
                     'status_name' => $user->statusUser->status_name,
                 ],
+                'userProfileImage' => $user->userProfile->userProfileImage->map(function ($profileImage) {
+                    return [
+                        'id' => $profileImage->id,
+                        'imagePath' => $profileImage->image_path,
+                        'imageName' => $profileImage->image_name,
+                        'imageData' => $profileImage->image_data,
+                    ];
+                }),
             ];
 
             if ($userProfiles) {
