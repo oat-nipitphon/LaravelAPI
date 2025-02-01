@@ -34,7 +34,7 @@ class AuthController extends Controller
 
             if ($user) {
 
-                $dateTimeNow = Carbon::now('Asia/Bangkok')->setTimezone('UTC+7');
+                $dateTimeNow = Carbon::now('Asia/Bangkok');
                 UserProfile::create([
                     'user_id' => $user->id,
                     'title_name' => "",
@@ -146,7 +146,7 @@ class AuthController extends Controller
 
             if ($user) {
 
-                $dateTimeNow = Carbon::now('Asia/Bangkok')->setTimezone('UTC+7');
+                $dateTimeNow = Carbon::now('Asia/Bangkok');
                 $userLogin = UserLogin::create([
                     'user_id' => $user->id,
                     'status_login' => "online",
@@ -194,9 +194,9 @@ class AuthController extends Controller
 
                 if ($user) {
 
-                    $userLogin = UserLogin::where('user_id', $user->id)->find();
+                    $userLogin = UserLogin::where('user_id', $user->id)->first();
 
-                    $dateTimeNow = Carbon::now('Asia/Bangkok')->setTimezone('UTC+7');
+                    $dateTimeNow = Carbon::now('Asia/Bangkok');
 
                     if ($userLogin) {
 

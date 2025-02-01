@@ -51,7 +51,7 @@ Route::apiResource('/users', App\Http\Controllers\UserController::class)->middle
 
 
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
-Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile']);
+Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 
 // Post
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');

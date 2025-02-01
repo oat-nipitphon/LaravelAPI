@@ -23,7 +23,7 @@ class UserProfileImage extends Model
     ];
 
     public function userProfile () : BelongsTo {
-        return $this->belongsTo(UserProfile::class);
+        return $this->belongsTo(UserProfile::class, 'profile_id', 'id');
     }
 
 }
