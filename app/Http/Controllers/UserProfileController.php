@@ -189,12 +189,24 @@ class UserProfileController extends Controller
                 'userFollowersProfile',
                 'userFollowersAccount'
             )->findOrFail($id);
-            // Transform the user profile data
+
             $userProfiles = [
                 'id' => $user->id,
                 'email' => $user->email,
                 'name' => $user->name,
                 'username' => $user->username,
+                'statusUser' => [
+                    'id' => $user->statusUser->id,
+                    'status_name' => $user->statusUser->status_name,
+                ],
+                'userProfile' => [
+                    'id' => $user->userProfile->id,
+                    'title_name' => $user->userProfile->title_name,
+                    'full_name' => $user->userProfile->full_name,
+                    'nick_name' => $user->userProfile->nick_name,
+                    'tel_phone' => $user->userProfile->tel_phone,
+                    'birth_day' => $user->userProfile->birth_day,
+                ],
                 'userProfileContact' => $user->userProfileContact->map(function ($contact) {
                     return [
                         'id' => $contact->id,
@@ -206,18 +218,6 @@ class UserProfileController extends Controller
                         . base64_encode($contact->contact_icon_data) : null,
                     ];
                 }),
-                'userProfile' => [
-                    'id' => $user->userProfile->id,
-                    'title_name' => $user->userProfile->title_name,
-                    'full_name' => $user->userProfile->full_name,
-                    'nick_name' => $user->userProfile->nick_name,
-                    'tel_phone' => $user->userProfile->tel_phone,
-                    'birth_day' => $user->userProfile->birth_day,
-                ],
-                'statusUser' => [
-                    'id' => $user->statusUser->id,
-                    'status_name' => $user->statusUser->status_name,
-                ],
                 'userProfileImage' => $user->userProfile->userProfileImage->map(function ($profileImage) {
                     return [
                         'id' => $profileImage->id,

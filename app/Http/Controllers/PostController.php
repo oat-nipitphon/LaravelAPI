@@ -36,6 +36,8 @@ class PostController extends Controller
 
 
 
+
+
             return response()->json([
                 'message' => "Laravel api get posts success.",
                 'posts' => $posts
