@@ -21,28 +21,78 @@ class PostController extends Controller
     {
         try {
 
-            // status 0=false 1=true
-            $posts = Post::with(
-                'postImage',
+            // Status 0=false, 1=true
+            $getPosts = Post::with([
                 'postType',
-                'user',
+                'postImage',
                 'postPopularity',
+                'user',
                 'user.userProfile.userProfileImage',
-            )
-                ->where('deletetion_status', 'false')
-                ->where('block_status', 'false')
+            ])
+                ->where('deletetion_status', false)
+                ->where('block_status', false)
                 ->orderBy('created_at', 'desc')
                 ->get();
 
+                // dd($getPosts);
 
 
+            $posts = $getPosts->map(function ($post) {
+                return [
+                    'id' => $post->id,
+                    'title' => $post->post_title,
+                    'content' => $post->post_content,
+                    'userID' => $post->user_id,
+                    'createdAt' => $post->created_at,
+                    'updatedAt' => $post->updated_at,
 
+                    'postType' => $post->postType ? [
+                        'id' => $post->postType->id,
+                        'name' => $post->postType->post_type_name,
+                    ] : null,
+
+                    'postPopularity' => $post->postPopularity->map(function ($pop) {
+                        return [
+                            'id' => $pop->id,
+                            'status' => $pop->pop_status,
+                            'postID' => $pop->post_id,
+                            'userID' => $pop->user_id,
+                        ];
+                    }),
+
+                    'postImage' => $post->postImage->map(function ($image) {
+                        return [
+                            'id' => $image->id,
+                            'imageData' => $image->image_data ? 'data:image/png;base64,'
+                            . base64_encode($image->image_data) : null,
+                        ];
+                    }),
+
+                    'user' => $post->user ? [
+                        'id' => $post->user->id,
+                        'username' => $post->user->username,
+                    ] : null,
+
+                    'userProfile' => $post->user && $post->user->userProfile ? [
+                        'id' => $post->user->userProfile->id,
+                        'fullName' => $post->user->userProfile->full_name,
+                    ] : null,
+
+                    'userProfileImage' => $post->user->userProfile->userProfileImage->map(function ($userImage) {
+                        return [
+                            'id' => $userImage->id,
+                            'imageData' => $userImage->image_data ? 'data:image/png;base64,'
+                            . base64_encode($userImage->image_data) : null,
+                        ];
+                    }),
+                ];
+            });
 
             return response()->json([
-                'message' => "Laravel api get posts success.",
-                'posts' => $posts
-
+                'message' => "Laravel API get posts success.",
+                'posts' => $posts,
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel api get posts error",
@@ -108,7 +158,6 @@ class PostController extends Controller
                 'message' => 'Post created successfully!',
                 'post' => $post->load('postImage') // load model Relationships
             ], 201);
-
         } catch (\Exception $e) {
 
             Log::error('Error in storing post: ', [
@@ -120,7 +169,6 @@ class PostController extends Controller
                 'message' => "laravel post controller function store error :",
                 'error' => $e->getMessage()
             ], 400);
-
         }
     }
 
@@ -252,9 +300,6 @@ class PostController extends Controller
             } else {
                 dd($recoverPosts);
             }
-
-
-
         } catch (\Exception $e) {
             return response()->json([
                 'messageError' => "Laravel recover prost error" . $e->getMessage()
@@ -282,7 +327,6 @@ class PostController extends Controller
             } else {
                 dd($statusRecoverPost);
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'messageError' => "Laravel recover prost error" . $e->getMessage()
