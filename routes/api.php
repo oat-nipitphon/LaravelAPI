@@ -29,6 +29,40 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     $user_req = $request->user();
     $user_login = User::with('userProfile', 'userProfile.userProfileImage')->findOrFail($user_req->id);
     $token = $user_login->createToken($user_login->username)->plainTextToken;
+    $user_login->user->map(function ($user) {
+        return $user ? [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'username' => $user->username,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+            'userProfile' => $user->user_profile->map(function ($userProfile) {
+                return $userProfile ? [
+                    'id' => $userProfile->id,
+                    'user_id' => $userProfile->user_id,
+                    'title_name' => $userProfile->title_name,
+                    'full_name' => $userProfile->full_name,
+                    'nick_name' => $userProfile->nick_name,
+                    'tel_phone' => $userProfile->tel_name,
+                    'birth_day' => $userProfile->birth_day,
+                    'created_at' => $userProfile->created_at,
+                    'updated_at' => $userProfile->updated_at,
+                ] : null;
+            }),
+            'userProfileImage' => $user->user_profile->user_profile_image->map(function ($profileImage) {
+                return $profileImage ? [
+                    'id' => $profileImage->id,
+                    'profile_id' => $profileImage->profile_id,
+                    'image_path' => $profileImage->image_path,
+                    'image_name' => $profileImage->image_name,
+                    'image_data' => $profileImage->image_data,
+                    'created_at' => $profileImage->created_at,
+                    'updated_at' => $profileImage->updated_at,
+                ] : null;
+            }),
+        ] : null;
+    });
     return response()->json([
         'user_login' => $user_login,
         'token' => $token
@@ -54,8 +88,7 @@ Route::apiResource('/user_profiles', UserProfileController::class)->middleware('
 Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 
 // Post
-Route::apiResource('/posts', PostController::class);
-// ->middleware('auth:sanctum');
+Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
 
 // Post Popularity
 Route::prefix('/posts/popularity')->group(function () {

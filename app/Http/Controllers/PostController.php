@@ -23,6 +23,8 @@ class PostController extends Controller
                 'postType',
                 'postImage',
                 'postPopularity',
+                'user',
+                'user.userProfile',
                 'user.userProfileContact',
                 'user.userProfile.userProfileImage',
             ])
@@ -36,6 +38,7 @@ class PostController extends Controller
                         'id' => $post->id,
                         'title' => $post->post_title,
                         'content' => $post->post_content,
+                        'userID' => $post->user_id,
                         'createdAt' => $post->created_at,
                         'updatedAtt' => $post->updated_at,
 
@@ -69,19 +72,17 @@ class PostController extends Controller
                             'statusID' => $post->user->status_id
                         ] : null,
 
-                        'userProfile' => $post->user->userProfile->map(function ($userProfile) {
-                            return $userProfile ? [
-                                'id' => $userProfile->id,
-                                'userID' => $userProfile->user_id,
-                                'titleName' => $userProfile->title_name,
-                                'fullName' => $userProfile->full_name,
-                                'nickName' => $userProfile->nick_name,
-                                'telPhone' => $userProfile->tel_phone,
-                                'birthDay' => $userProfile->birth_day,
-                                'createdAt' => $userProfile->created_at,
-                                'updatedAt' => $userProfile->updated_at,
-                            ] : null;
-                        }),
+                        'userProfile' => $post->user->userProfile ? [
+                            'id' => $post->user->userProfile->id,
+                            'userID' => $post->user->userProfile->user_id,
+                            'titleName' => $post->user->userProfile->title_name,
+                            'fullName' => $post->user->userProfile->full_name,
+                            'nickName' => $post->user->userProfile->nick_name,
+                            'telPhone' => $post->user->userProfile->tel_phone,
+                            'birthDay' => $post->user->userProfile->birth_day,
+                            'createdAt' => $post->user->userProfile->created_at,
+                            'updatedAt' => $post->user->userProfile->updated_at,
+                        ] : null,
 
                         'userProfileImage' => $post->user->userProfile->userProfileImage->map(function ($profileImage) {
                             return $profileImage ? [
@@ -105,8 +106,6 @@ class PostController extends Controller
 
                     ] : null;
                 });
-
-                return response()->json($posts, 200);
 
             if ($posts) {
                 return response()->json([
