@@ -117,7 +117,7 @@ class PostController extends Controller
                 'image' => 'nullable|image|max:2048'
             ]);
 
-            $dateTimeCreatePost = Carbon::now('Asia/Bangkok')->setTimezone('UTC+7');
+            $dateTimeCreatePost = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
             $post = Post::create([
                 'post_title' => $validated['title'],
@@ -130,34 +130,31 @@ class PostController extends Controller
                 'created_at' => $dateTimeCreatePost,
             ]);
 
-            if (!$post) {
-                return response()->json([
-                    'message' => 'Failed to create the post. Please try again.',
-                ], 500);
-            }
-
             if ($request->hasFile('image')) {
-
-                // Move file image
-                $validated['image'] = $request->file('image')->store('images', 'public');
-
-                $postImage = PostImage::create([
+                $postImage = new PostImage();
+                $file = $request->file('image');
+                $imgPath = $file->store('post_images', 'public');
+                $imgName = $file->getClientOriginalName();
+                $imgNameNew = time() . "_" . $imgName;
+                $imgData = file_get_contents($file->getRealPath());
+                $imgDataBase64 = base64_encode($imgData);
+                $postImage->create([
                     'post_id' => $post->id,
-                    'image_name' => $validated['image']
+                    'image_path' => $imgPath,
+                    'image_name' => $imgNameNew,
+                    'image_data' => $imgDataBase64,
                 ]);
-
-                if (!$postImage) {
-                    return response()->json([
-                        'message' => 'Failed to save the image. Post created without image.',
-                        'post' => $post
-                    ], 206);
-                }
             }
 
-            return response()->json([
-                'message' => 'Post created successfully!',
-                'post' => $post->load('postImage') // load model Relationships
-            ], 201);
+            if ($post && $postImage) {
+
+                return response()->json([
+                    'message' => 'Post created successfully!',
+                    'post' => $post,
+                    'postImage' => $imgDataBase64
+                ], 201);
+            }
+
         } catch (\Exception $e) {
 
             Log::error('Error in storing post: ', [

@@ -27,7 +27,7 @@ class Post extends Model
         'refer',
         'user_id',
         'deletetion_status',
-        'spam_post_status',
+        'block_status',
         'created_at',
         'updated_at',
 
