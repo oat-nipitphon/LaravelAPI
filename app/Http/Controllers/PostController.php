@@ -23,7 +23,6 @@ class PostController extends Controller
                 'postType',
                 'postImage',
                 'postPopularity',
-                'user',
                 'user.userProfileContact',
                 'user.userProfile.userProfileImage',
             ])
@@ -37,8 +36,8 @@ class PostController extends Controller
                         'id' => $post->id,
                         'title' => $post->post_title,
                         'content' => $post->post_content,
-                        'created_at' => $post->created_at,
-                        'updated_at' => $post->updated_at,
+                        'createdAt' => $post->created_at,
+                        'updatedAtt' => $post->updated_at,
 
                         'postType' => $post->postType ? [
                             'id' => $post->postType->id,
@@ -48,17 +47,17 @@ class PostController extends Controller
                         'postPopularity' => $post->postPopularity->map(function ($postPop) {
                             return $postPop ? [
                                 'id' => $postPop->id,
-                                'post_id' => $postPop->post_id,
-                                'user_id' => $postPop->user_id,
-                                'pop_status' => $postPop->pop_status,
+                                'postID' => $postPop->post_id,
+                                'userID' => $postPop->user_id,
+                                'status' => $postPop->pop_status,
                             ] : null;
                         }),
 
                         'postImage' => $post->postImage->map(function ($image) {
                             return $image ? [
                                 'id' => $image->id,
-                                'image_name' => $image->image_name,
-                                'image_data' => $image->image_data,
+                                'imageName' => $image->image_name,
+                                'imageData' => $image->image_data,
                             ] : null ;
                         }),
 
@@ -67,8 +66,22 @@ class PostController extends Controller
                             'name' => $post->user->name,
                             'email' => $post->user->email,
                             'username' => $post->user->username,
-                            'status_id' => $post->user->status_id
+                            'statusID' => $post->user->status_id
                         ] : null,
+
+                        'userProfile' => $post->user->userProfile->map(function ($userProfile) {
+                            return $userProfile ? [
+                                'id' => $userProfile->id,
+                                'userID' => $userProfile->user_id,
+                                'titleName' => $userProfile->title_name,
+                                'fullName' => $userProfile->full_name,
+                                'nickName' => $userProfile->nick_name,
+                                'telPhone' => $userProfile->tel_phone,
+                                'birthDay' => $userProfile->birth_day,
+                                'createdAt' => $userProfile->created_at,
+                                'updatedAt' => $userProfile->updated_at,
+                            ] : null;
+                        }),
 
                         'userProfileImage' => $post->user->userProfile->userProfileImage->map(function ($profileImage) {
                             return $profileImage ? [
@@ -82,17 +95,18 @@ class PostController extends Controller
                         'userProfileContact' => $post->user->userProfileContact->map(function ($contact) {
                             return $contact ? [
                                 'id' => $contact->id,
-                                'contact_name' => $contact->contact_name,
-                                'contact_link_path' => $contact->contact_link_path,
-                                'contact_icon_name' => $contact->contact_icon_name,
-                                'contact_icon_url' => $contact->contact_icon_url,
-                                'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
+                                'name' => $contact->contact_name,
+                                'iconName' => $contact->contact_icon_name,
+                                'iconUrl' => $contact->contact_icon_url,
+                                'iconData' => $contact->contact_icon_data ? 'data:image/png;base64,'
                                 . base64_encode($contact->contact_icon_data) : null,
                             ] : null ;
                         }),
 
                     ] : null;
                 });
+
+                return response()->json($posts, 200);
 
             if ($posts) {
                 return response()->json([

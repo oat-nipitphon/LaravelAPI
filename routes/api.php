@@ -54,7 +54,8 @@ Route::apiResource('/user_profiles', UserProfileController::class)->middleware('
 Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 
 // Post
-Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
+Route::apiResource('/posts', PostController::class);
+// ->middleware('auth:sanctum');
 
 // Post Popularity
 Route::prefix('/posts/popularity')->group(function () {
