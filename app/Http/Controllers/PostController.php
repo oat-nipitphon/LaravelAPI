@@ -8,9 +8,7 @@ use App\Models\PostPopularity;
 use App\Models\PostImage;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Faker\Core\DateTime;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -114,10 +112,10 @@ class PostController extends Controller
                 'content' => 'required|string',
                 'refer' => 'required|string',
                 'typeID' => 'required|string',
-                'image' => 'nullable|image|max:2048'
+                'imageFile' => 'required|image|:jpeg,png,jpg|max:2048',
             ]);
 
-            $dateTimeCreatePost = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+            $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
             $post = Post::create([
                 'post_title' => $validated['title'],
@@ -127,33 +125,28 @@ class PostController extends Controller
                 'user_id' => $validated['userID'],
                 'deletetion_status' => 'false', // status 0 == false // status 1 == true
                 'block_status' => 'false',
-                'created_at' => $dateTimeCreatePost,
+                'created_at' => $dateTimeNow,
             ]);
 
-            if ($request->hasFile('image')) {
-                $postImage = new PostImage();
-                $file = $request->file('image');
-                $imgPath = $file->store('post_images', 'public');
-                $imgName = $file->getClientOriginalName();
-                $imgNameNew = time() . "_" . $imgName;
-                $imgData = file_get_contents($file->getRealPath());
-                $imgDataBase64 = base64_encode($imgData);
-                $postImage->create([
+            if ($request->hasFile('imageFile')) {
+                $imageFile = $request->file('imageFile');
+                $imagePath = $imageFile->store('post_images', 'public');
+                $imageName = $imageFile->getClientOriginalName();
+                $imageNameNew = time() . " - " . $imageName;
+                $imageData = file_get_contents($imageFile->getRealPath());
+                $imageDataBase64 = base64_encode($imageData);
+
+                PostImage::create([
                     'post_id' => $post->id,
-                    'image_path' => $imgPath,
-                    'image_name' => $imgNameNew,
-                    'image_data' => $imgDataBase64,
+                    'image_path' => $imagePath,
+                    'image_name' => $imageNameNew,
+                    'image_data' => $imageDataBase64,
                 ]);
             }
 
-            if ($post && $postImage) {
-
-                return response()->json([
-                    'message' => 'Post created successfully!',
-                    'post' => $post,
-                    'postImage' => $imgDataBase64
-                ], 201);
-            }
+            return response()->json([
+                'message' => 'Post created successfully.',
+            ], 201);
 
         } catch (\Exception $e) {
 
