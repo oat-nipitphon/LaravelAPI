@@ -19,83 +19,104 @@ class PostController extends Controller
     {
         try {
 
-            // Status 0=false, 1=true
-            $getPosts = Post::with([
+            $posts = Post::with([
                 'postType',
                 'postImage',
                 'postPopularity',
                 'user',
+                'user.userProfileContact',
                 'user.userProfile.userProfileImage',
             ])
-                ->where('deletetion_status', false)
-                ->where('block_status', false)
+                ->where('deletetion_status', 'false')
+                ->where('block_status', 'false')
                 ->orderBy('created_at', 'desc')
-                ->get();
+                ->get()
+                ->map(function ($post) {
+                    return $post ? [
 
-                // dd($getPosts);
+                        'id' => $post->id,
+                        'title' => $post->post_title,
+                        'content' => $post->post_content,
+                        'created_at' => $post->created_at,
+                        'updated_at' => $post->updated_at,
 
+                        'postType' => $post->postType ? [
+                            'id' => $post->postType->id,
+                            'name' => $post->postType->type_name,
+                        ] : null,
 
-            $posts = $getPosts->map(function ($post) {
-                return [
-                    'id' => $post->id,
-                    'title' => $post->post_title,
-                    'content' => $post->post_content,
-                    'userID' => $post->user_id,
-                    'createdAt' => $post->created_at,
-                    'updatedAt' => $post->updated_at,
+                        'postPopularity' => $post->postPopularity->map(function ($postPop) {
+                            return $postPop ? [
+                                'id' => $postPop->id,
+                                'post_id' => $postPop->post_id,
+                                'user_id' => $postPop->user_id,
+                                'pop_status' => $postPop->pop_status,
+                            ] : null;
+                        }),
 
-                    'postType' => $post->postType ? [
-                        'id' => $post->postType->id,
-                        'name' => $post->postType->post_type_name,
-                    ] : null,
+                        'postImage' => $post->postImage->map(function ($image) {
+                            return $image ? [
+                                'id' => $image->id,
+                                'image_name' => $image->image_name,
+                                'image_data' => $image->image_data,
+                            ] : null ;
+                        }),
 
-                    'postPopularity' => $post->postPopularity->map(function ($pop) {
-                        return [
-                            'id' => $pop->id,
-                            'status' => $pop->pop_status,
-                            'postID' => $pop->post_id,
-                            'userID' => $pop->user_id,
-                        ];
-                    }),
+                        'user' => $post->user ? [
+                            'id' => $post->user->id,
+                            'name' => $post->user->name,
+                            'email' => $post->user->email,
+                            'username' => $post->user->username,
+                            'status_id' => $post->user->status_id
+                        ] : null,
 
-                    'postImage' => $post->postImage->map(function ($image) {
-                        return [
-                            'id' => $image->id,
-                            'imageData' => $image->image_data ? 'data:image/png;base64,'
-                            . base64_encode($image->image_data) : null,
-                        ];
-                    }),
+                        'userProfileImage' => $post->user->userProfile->userProfileImage->map(function ($profileImage) {
+                            return $profileImage ? [
+                                'id' => $profileImage->id,
+                                'imagePath' => $profileImage->image_path,
+                                'imageName' => $profileImage->image_name,
+                                'imageData' => $profileImage->image_data,
+                            ] : null ;
+                        }),
 
-                    'user' => $post->user ? [
-                        'id' => $post->user->id,
-                        'username' => $post->user->username,
-                    ] : null,
+                        'userProfileContact' => $post->user->userProfileContact->map(function ($contact) {
+                            return $contact ? [
+                                'id' => $contact->id,
+                                'contact_name' => $contact->contact_name,
+                                'contact_link_path' => $contact->contact_link_path,
+                                'contact_icon_name' => $contact->contact_icon_name,
+                                'contact_icon_url' => $contact->contact_icon_url,
+                                'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
+                                . base64_encode($contact->contact_icon_data) : null,
+                            ] : null ;
+                        }),
 
-                    'userProfile' => $post->user && $post->user->userProfile ? [
-                        'id' => $post->user->userProfile->id,
-                        'fullName' => $post->user->userProfile->full_name,
-                    ] : null,
+                    ] : null;
+                });
 
-                    'userProfileImage' => $post->user->userProfile->userProfileImage->map(function ($userImage) {
-                        return [
-                            'id' => $userImage->id,
-                            'imageData' => $userImage->image_data ? 'data:image/png;base64,'
-                            . base64_encode($userImage->image_data) : null,
-                        ];
-                    }),
-                ];
-            });
+            if ($posts) {
+                return response()->json([
+                    'message' => "Laravel get posts response success.",
+                    'posts' => $posts,
+                ], 200);
+            }
 
             return response()->json([
-                'message' => "Laravel API get posts success.",
+                'message' => "Laravel get posts response false",
                 'posts' => $posts,
-            ], 200);
+            ], 204);
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Laravel api get posts error",
-                'error' => $e->getMessage()
-            ], 400);
+        } catch (\Exception $error) {
+
+            Log::error("Laravel function get posts error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
+            ]);
+
+            // return response()->json([
+            //     'message' => "Laravel function get posts error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
 
@@ -112,7 +133,7 @@ class PostController extends Controller
                 'content' => 'required|string',
                 'refer' => 'required|string',
                 'typeID' => 'required|string',
-                'imageFile' => 'required|image|:jpeg,png,jpg|max:2048',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',  // 10MB max
             ]);
 
             $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
@@ -129,36 +150,50 @@ class PostController extends Controller
             ]);
 
             if ($request->hasFile('imageFile')) {
+
                 $imageFile = $request->file('imageFile');
                 $imagePath = $imageFile->store('post_images', 'public');
                 $imageName = $imageFile->getClientOriginalName();
                 $imageNameNew = time() . " - " . $imageName;
+
                 $imageData = file_get_contents($imageFile->getRealPath());
                 $imageDataBase64 = base64_encode($imageData);
 
-                PostImage::create([
+                $postImage = PostImage::create([
                     'post_id' => $post->id,
                     'image_path' => $imagePath,
                     'image_name' => $imageNameNew,
                     'image_data' => $imageDataBase64,
+                    'created_at' => $dateTimeNow,
                 ]);
+
+                if ($post && $postImage) {
+                    return response()->json([
+                        'message' => 'Laravel function store successfully.',
+                        'post' => $post,
+                        'postImage' => $postImage
+                    ], 201);
+                }
+
             }
 
             return response()->json([
-                'message' => 'Post created successfully.',
-            ], 201);
+                'message' => "Laravel function store response false",
+                'post' => $post,
+                'postImage' => $postImage
+            ], 204);
 
-        } catch (\Exception $e) {
+        } catch (\Exception $error) {
 
-            Log::error('Error in storing post: ', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+            Log::error("Laravel function store error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
             ]);
 
-            return response()->json([
-                'message' => "laravel post controller function store error :",
-                'error' => $e->getMessage()
-            ], 400);
+            // return response()->json([
+            //     'message' => "Laravel function store error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
 
@@ -173,21 +208,29 @@ class PostController extends Controller
 
             if (!$post) {
                 return response()->json([
-                    'message' => "laravel api post No content !.",
-                    'post' => "ID-" . $id . " - " . $post
-                ], 204);
+                    'message' => "Laravel function show successfully.",
+                    'post' => $post
+                ], 200);
+
             }
 
+            return response()->json([
+                'message' => "Laravel function show response false !!",
+                'postID' => $id,
+                'post' => $post,
+            ], 204);
 
-            return response()->json([
-                'message' => "Laravel api get posts success.",
-                'post' => $post
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Laravel api get posts error",
-                'error' => $e->getMessage()
-            ], 400);
+        } catch (\Exception $error) {
+
+            Log::error("Laravel function show error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
+            ]);
+
+            // return response()->json([
+            //     'message' => "Laravel function show error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
 
@@ -221,23 +264,31 @@ class PostController extends Controller
                 ]);
 
                 return response()->json([
-                    'message' => "Laravel function update post success.",
+                    'message' => "Laravel function update successfullry.",
                     'post' => $post
                 ], 201);
-            } else {
-                return response()->json([
-                    'message' => "Laravel function update post false.",
-                    'post' => $post
-                ], 204);
+
             }
-        } catch (\Exception $e) {
+
             return response()->json([
-                'message' => "Laravel controller function update error",
-                'error' => $e->getMessage()
-            ], 400);
+                'message' => "Laravel function update response false.",
+                'postID' => $request->postID,
+                'post' => $post,
+            ], 204);
+
+        } catch (\Exception $error) {
+
+            Log::error("Laravel function update error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
+            ]);
+
+            // return response()->json([
+            //     'message' => "Laravel function update error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
-
 
     /**
      * Remove the specified resource from storage.
@@ -245,32 +296,57 @@ class PostController extends Controller
     public function destroy(string $id)
     {
         try {
+
             $post = Post::findOrFail($id);
 
-            $post->update([
-                'deletetion_status' => 'true',
+            $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+
+            if ($post) {
+
+                $post->update([
+                    'deletetion_status' => 'true',
+                ]);
+
+
+                $postDeletetion = PostDeletetion::create(
+                    [
+                        'post_id' => $post->id,
+                        'date_time_delete' => $dateTime,
+                        'deletetion_status' => 'true',
+                    ]
+                );
+            }
+
+            if ($post && $postDeletetion) {
+                return response()->json([
+                    'message' => "Post function destroy successfully.",
+                    'postDeletetion' => $postDeletetion
+                ], 200);
+            }
+
+            return response()->json([
+                'message' => "Post function destroy response false !!",
+                'id' => $id,
+                'post' => $post
+            ], 204);
+
+        } catch (\Exception $error) {
+
+            Log::error("Laravel function destroy error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
             ]);
 
-            $dateTime = Carbon::now();
-            PostDeletetion::updateOrCreate(
-                ['post_id' => $post->id],
-                [
-                    'date_time_delete' => $dateTime,
-                    'deletetion_status' => 'true',
-                ]
-            );
-
-            return response()->json([
-                'message' => "Post deleted successfully.",
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Error during post deletion.",
-                'error' => $e->getMessage()
-            ], 500);
+            // return response()->json([
+            //     'message' => "Laravel function destroy error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
 
+    /**
+     * Recover get post data.
+    */
     public function recoverGetPost(string $userID)
     {
         try {
@@ -281,22 +357,41 @@ class PostController extends Controller
                 ->where('block_status', 'false')
                 ->orderBy('created_at', 'desc')
                 ->get();
-            // dd($recoverPosts);
+
             if ($recoverPosts) {
+
                 return response()->json([
-                    'message' => "Laravel recoverPosts GET success.",
+                    'message' => "Laravel function recoverGetPosts successfully.",
                     'recoverPosts' => $recoverPosts
                 ], 200);
+
             } else {
-                dd($recoverPosts);
+
+                return response()->json([
+                    'message' => "Laravel function recoverGetPosts response false !!",
+                    'userID' => $userID,
+                    'recoverPosts' => $recoverPosts
+                ], 204);
+
             }
-        } catch (\Exception $e) {
-            return response()->json([
-                'messageError' => "Laravel recover prost error" . $e->getMessage()
-            ], 400);
+
+        } catch (\Exception $error) {
+
+            Log::error("Laravel function recover post error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
+            ]);
+
+            // return response()->json([
+            //     'message' => "Laravel function recover post error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
 
+    /**
+     * Recover update status post.
+    */
     public function recoverPost(string $postID)
     {
         try {
@@ -308,22 +403,38 @@ class PostController extends Controller
                     'deletetion_status' => 'false'
                 ]);
 
-                if ($statusRecoverPost) {
-                    return response()->json([
-                        'message' => "laravel recover post success",
-                        'post' => $statusRecoverPost
-                    ], 201);
-                }
-            } else {
-                dd($statusRecoverPost);
             }
-        } catch (\Exception $e) {
+
+            if ($statusRecoverPost) {
+                return response()->json([
+                    'message' => "laravel recoverPost successfullry.",
+                    'post' => $statusRecoverPost
+                ], 201);
+            }
+
             return response()->json([
-                'messageError' => "Laravel recover prost error" . $e->getMessage()
-            ], 401);
+                'message' => "laravel recoverPost response false !!",
+                'postID' => $postID,
+                'post' => $statusRecoverPost
+            ], 204);
+
+        } catch (\Exception $error) {
+
+            Log::error("Laravel function recover post error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
+            ]);
+
+            // return response()->json([
+            //     'message' => "Laravel function recover post error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
 
+    /**
+     * Pop like post
+    */
     public function postPopLike(string $userID, string $postID, string $popStatusLike)
     {
         try {
@@ -350,18 +461,35 @@ class PostController extends Controller
 
             $updatedReactions = PostPopularity::where('post_id', $postID)->get();
 
+            if ($updatedReactions) {
+                return response()->json([
+                    'message' => "Laravel function postPopLike successfully.",
+                    'updatedReactions' => $updatedReactions
+                ], 200);
+            }
+
             return response()->json([
-                'message' => "Pop Like updated successfully.",
+                'message' => "Laravel function postPopLike response false !!",
                 'updatedReactions' => $updatedReactions
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Error updating Pop Like.",
-                'error' => $e->getMessage()
-            ], 400);
+            ], 204);
+
+        } catch (\Exception $error) {
+
+            Log::error("Laravel function postPopLike post error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
+            ]);
+
+            // return response()->json([
+            //     'message' => "Laravel function postPopLike post error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
 
+    /**
+     * Pop dis loke post
+    */
     public function postPopDisLike(string $userID, string $postID, string $popStatusDisLike)
     {
         try {
@@ -376,6 +504,7 @@ class PostController extends Controller
                     $existingReaction->update(['pop_status' => $popStatusDisLike]);
                 }
             } else {
+
                 PostPopularity::create([
                     'post_id' => $postID,
                     'user_id' => $userID,
@@ -385,15 +514,29 @@ class PostController extends Controller
 
             $updatedReactions = PostPopularity::where('post_id', $postID)->get();
 
+            if ($updatedReactions) {
+                return response()->json([
+                    'message' => "Laravel function postPopDisLike successfully.",
+                    'updatedReactions' => $updatedReactions
+                ], 200);
+            }
+
             return response()->json([
-                'message' => "Pop Dislike updated successfully.",
+                'message' => "Laravel function postPopDisLike response false !!",
                 'updatedReactions' => $updatedReactions
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => "Error updating Pop Dislike.",
-                'error' => $e->getMessage()
-            ], 400);
+            ], 204);
+
+        } catch (\Exception $error) {
+
+            Log::error("Laravel function postPopDisLike error", [
+                'error' => $error->getMessage(),
+                'trace' => $error->getTraceAsString()
+            ]);
+
+            // return response()->json([
+            //     'message' => "Laravel function postPopDisLike error",
+            //     'error' => $e->getMessage()
+            // ], 400);
         }
     }
 }

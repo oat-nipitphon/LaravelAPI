@@ -48,7 +48,8 @@ class AdminManagerUserProfileController extends Controller
                                 'contact_link_path' => $contact->contact_link_path,
                                 'contact_icon_name' => $contact->contact_icon_name,
                                 'contact_icon_url' => $contact->contact_icon_url,
-                                'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,' . base64_encode($contact->contact_icon_data) : null, // ✅ แก้ไขตรงนี้
+                                'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
+                                . base64_encode($contact->contact_icon_data) : null,
                             ];
                         }),
                     ];

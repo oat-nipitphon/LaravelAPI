@@ -78,14 +78,14 @@ class UserProfileController extends Controller
             if ($userProfile) {
 
                 $birthDay = Carbon::parse($validated['birthDay'])->format('Y-m-d');
-                $dateTimeUpdate = Carbon::now('Asia/Bangkok')->setTimezone('UTC');
+                $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
                 $userProfile->user->update([
                     'title_name' => $validated['titleName'],
                     'full_name' => $validated['fullName'],
                     'nick_name' => $validated['nickName'],
                     'tel_phone' => $validated['telPhone'],
                     'birth_day' => $birthDay,
-                    'updated_at' => $dateTimeUpdate,
+                    'updated_at' => $dateTime,
                     'name' => $validated['name'],
                     'email' => $validated['email'],
                     'username' => $validated['userName'],
@@ -279,7 +279,7 @@ class UserProfileController extends Controller
 
             // ส่วนการจัดการข้อมูลต่อไป (เช่น การอัพเดทข้อมูลในฐานข้อมูล)
             $userProfile = UserProfile::findOrFail($validated['profileID']);
-            $dateTimeUpdate = Carbon::now('Asia/Bangkok')->setTimezone('UTC');
+            $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
             if ($userProfile) {
 
                 // ใช้ข้อมูลที่ผ่านการ validate มาอัพเดท
@@ -290,7 +290,7 @@ class UserProfileController extends Controller
                     'nick_name' => $validated['nickName'],
                     'tel_phone' => $validated['telPhone'],
                     'birth_day' => $birthDay,
-                    'updated_at' => $dateTimeUpdate
+                    'updated_at' => $dateTime
                 ]);
 
                 $user = User::findOrFail('id', $userProfile->user_id);
