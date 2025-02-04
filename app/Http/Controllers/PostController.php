@@ -61,7 +61,7 @@ class PostController extends Controller
                                 'id' => $image->id,
                                 'imageName' => $image->image_name,
                                 'imageData' => $image->image_data,
-                            ] : null ;
+                            ] : null;
                         }),
 
                         'user' => $post->user ? [
@@ -90,7 +90,7 @@ class PostController extends Controller
                                 'imagePath' => $profileImage->image_path,
                                 'imageName' => $profileImage->image_name,
                                 'imageData' => $profileImage->image_data,
-                            ] : null ;
+                            ] : null;
                         }),
 
                         'userProfileContact' => $post->user->userProfileContact->map(function ($contact) {
@@ -100,8 +100,8 @@ class PostController extends Controller
                                 'iconName' => $contact->contact_icon_name,
                                 'iconUrl' => $contact->contact_icon_url,
                                 'iconData' => $contact->contact_icon_data ? 'data:image/png;base64,'
-                                . base64_encode($contact->contact_icon_data) : null,
-                            ] : null ;
+                                    . base64_encode($contact->contact_icon_data) : null,
+                            ] : null;
                         }),
 
                     ] : null;
@@ -118,7 +118,6 @@ class PostController extends Controller
                 'message' => "Laravel get posts response false",
                 'posts' => $posts,
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function get posts error", [
@@ -187,7 +186,6 @@ class PostController extends Controller
                         'postImage' => $postImage
                     ], 201);
                 }
-
             }
 
             return response()->json([
@@ -195,7 +193,6 @@ class PostController extends Controller
                 'post' => $post,
                 'postImage' => $postImage
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function store error", [
@@ -217,20 +214,46 @@ class PostController extends Controller
     {
         try {
 
-            $post = Post::with('postType', 'user')->findOrFail($id);
+            $post = Post::with(
+                'postType',
+                'postImage'
+            )->findOrFail($id);
 
-            if (!$post) {
+            $posts = [
+                'id' => $post->id,
+                'title' => $post->post_title,
+                'content' => $post->post_content,
+                'refer' => $post->refer,
+                'userID' => $post->user_id,
+                'deletetionStatus' => $post->deletetion_status,
+                'blockStatus' => $post->block_status,
+                'createdAt' => $post->created_at,
+                'updatedAt' => $post->updated_at,
+                'postType' => $post->postType ? [
+                    'id' => $post->postType->id,
+                    'typeName' => $post->postType->post_type_name,
+                ] : null,
+                'postImage' => $post->postImage->map(function ($image) {
+                    return $image ? [
+                        'id' => $image->id,
+                        'imagePath' => $image->image_path,
+                        'imageName' => $image->image_name,
+                        'imageData' => $image->image_data,
+                    ] : null;
+                }),
+            ];
+
+
+            if ($posts) {
                 return response()->json([
                     'message' => "Laravel function show successfully.",
-                    'post' => $post
+                    'posts' => $posts
                 ], 200);
-
             }
 
             return response()->json([
                 'message' => "Laravel function show response false !!",
-                'postID' => $id,
-                'post' => $post,
+                'posts' => $posts
             ], 204);
 
         } catch (\Exception $error) {
@@ -239,11 +262,6 @@ class PostController extends Controller
                 'error' => $error->getMessage(),
                 'trace' => $error->getTraceAsString()
             ]);
-
-            // return response()->json([
-            //     'message' => "Laravel function show error",
-            //     'error' => $e->getMessage()
-            // ], 400);
         }
     }
 
@@ -280,7 +298,6 @@ class PostController extends Controller
                     'message' => "Laravel function update successfullry.",
                     'post' => $post
                 ], 201);
-
             }
 
             return response()->json([
@@ -288,7 +305,6 @@ class PostController extends Controller
                 'postID' => $request->postID,
                 'post' => $post,
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function update error", [
@@ -342,7 +358,6 @@ class PostController extends Controller
                 'id' => $id,
                 'post' => $post
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function destroy error", [
@@ -359,7 +374,7 @@ class PostController extends Controller
 
     /**
      * Recover get post data.
-    */
+     */
     public function recoverGetPost(string $userID)
     {
         try {
@@ -377,7 +392,6 @@ class PostController extends Controller
                     'message' => "Laravel function recoverGetPosts successfully.",
                     'recoverPosts' => $recoverPosts
                 ], 200);
-
             } else {
 
                 return response()->json([
@@ -385,9 +399,7 @@ class PostController extends Controller
                     'userID' => $userID,
                     'recoverPosts' => $recoverPosts
                 ], 204);
-
             }
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function recover post error", [
@@ -404,7 +416,7 @@ class PostController extends Controller
 
     /**
      * Recover update status post.
-    */
+     */
     public function recoverPost(string $postID)
     {
         try {
@@ -415,7 +427,6 @@ class PostController extends Controller
                 $statusRecoverPost->update([
                     'deletetion_status' => 'false'
                 ]);
-
             }
 
             if ($statusRecoverPost) {
@@ -430,7 +441,6 @@ class PostController extends Controller
                 'postID' => $postID,
                 'post' => $statusRecoverPost
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function recover post error", [
@@ -447,7 +457,7 @@ class PostController extends Controller
 
     /**
      * Pop like post
-    */
+     */
     public function postPopLike(string $userID, string $postID, string $popStatusLike)
     {
         try {
@@ -485,7 +495,6 @@ class PostController extends Controller
                 'message' => "Laravel function postPopLike response false !!",
                 'updatedReactions' => $updatedReactions
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function postPopLike post error", [
@@ -502,7 +511,7 @@ class PostController extends Controller
 
     /**
      * Pop dis loke post
-    */
+     */
     public function postPopDisLike(string $userID, string $postID, string $popStatusDisLike)
     {
         try {
@@ -538,7 +547,6 @@ class PostController extends Controller
                 'message' => "Laravel function postPopDisLike response false !!",
                 'updatedReactions' => $updatedReactions
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function postPopDisLike error", [

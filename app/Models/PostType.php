@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PostType extends Model
 {
@@ -25,8 +25,9 @@ class PostType extends Model
         'updated_at'
     ];
 
-    public function post () : HasOne {
-        return $this->HasOne(Post::class);
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class, 'type_id', 'id'); // Fixing the relationship
     }
 
 }
