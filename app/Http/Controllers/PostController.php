@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\PostDeletetion;
 use App\Models\PostPopularity;
 use App\Models\PostImage;
+use App\Models\PostType;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -145,16 +146,27 @@ class PostController extends Controller
                 'content' => 'required|string',
                 'refer' => 'required|string',
                 'typeID' => 'required|string',
-                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',  // 10MB max
+                'newType' => 'required|string',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+
+
+            $postTypeID = $request->typeID;
+
+            if ($postTypeID === "new") {
+                $newPostType = PostType::create([
+                    'post_type_name' => $request->newType
+                ]);
+                $postTypeID = $newPostType->id;
+            }
 
             $post = Post::create([
                 'post_title' => $validated['title'],
                 'post_content' => $validated['content'],
                 'refer' => $validated['refer'],
-                'type_id' => $validated['typeID'],
+                'type_id' => $postTypeID,
                 'user_id' => $validated['userID'],
                 'deletetion_status' => 'false', // status 0 == false // status 1 == true
                 'block_status' => 'false',
@@ -164,7 +176,7 @@ class PostController extends Controller
             if ($request->hasFile('imageFile')) {
 
                 $imageFile = $request->file('imageFile');
-                $imagePath = $imageFile->store('post_images', 'public');
+                // $imagePath = $imageFile->store('post_images', 'public');
                 $imageName = $imageFile->getClientOriginalName();
                 $imageNameNew = time() . " - " . $imageName;
 
@@ -173,7 +185,7 @@ class PostController extends Controller
 
                 $postImage = PostImage::create([
                     'post_id' => $post->id,
-                    'image_path' => $imagePath,
+                    // 'image_path' => $imagePath,
                     'image_name' => $imageNameNew,
                     'image_data' => $imageDataBase64,
                     'created_at' => $dateTimeNow,
@@ -183,7 +195,6 @@ class PostController extends Controller
                     return response()->json([
                         'message' => 'Laravel function store successfully.',
                         'post' => $post,
-                        'postImage' => $postImage
                     ], 201);
                 }
             }
@@ -200,10 +211,10 @@ class PostController extends Controller
                 'trace' => $error->getTraceAsString()
             ]);
 
-            // return response()->json([
-            //     'message' => "Laravel function store error",
-            //     'error' => $e->getMessage()
-            // ], 400);
+            return response()->json([
+                'message' => "Laravel function store error",
+                'error' => $error->getMessage()
+            ], 500);
         }
     }
 
@@ -262,6 +273,12 @@ class PostController extends Controller
                 'error' => $error->getMessage(),
                 'trace' => $error->getTraceAsString()
             ]);
+
+            return response()->json([
+                'message' => "Laravel function show error",
+                'error' => $error->getMessage()
+            ], 500);
+
         }
     }
 
@@ -272,32 +289,76 @@ class PostController extends Controller
     {
         try {
 
-            $request->validate([
-                'postID' => 'required|integer',
+            $validated = $request->validate([
+                'postID' => 'required|string',
+                'userID' => 'required|string',
                 'title' => 'required|string',
                 'content' => 'required|string',
                 'refer' => 'required|string',
-                'typeID' => 'required|integer',
-                'userID' => 'required|integer',
+                'typeID' => 'required|string',
+                'newType' => 'required|string',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
-            $post = Post::findOrFail($request->postID);
+            $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
+            $postTypeID = $request->typeID;
+            if ($postTypeID === "new") {
+                $newPostType = PostType::create([
+                    'post_type_name' => $request->newType
+                ]);
+                $postTypeID = $newPostType->id;
+            }
 
+            dd([
+                'postTypeID' => $postTypeID,
+                'validated' => $validated,
+            ]);
+
+            $postTypeID = $request->typeID;
+            if ($request->newType) {
+                $newPostType = PostType::create([
+                    'post_type_name' => $request->newType
+                ]);
+                $postTypeID = $newPostType->id;
+            }
+
+            $post = Post::findOrFail($validated['postID']);
             if ($post) {
 
                 $post->update([
-                    'post_title' => $request->title,
-                    'post_content' => $request->content,
-                    'type_id' => $request->typeID,
-                    'refer' => $request->refer,
-                    'user_id' => $request->userID
+                    'post_title' => $validated[''],
+                    'post_content' => $validated[''],
+                    'type_id' => $postTypeID,
+                    'refer' => $validated[''],
+                    'user_id' => $validated[''],
+                    'updated_at' => $dateTimeNow,
                 ]);
+
+                if ($request->hasFile('imageFile')) {
+
+                    $imageFile =  $validated->file('imageFile');
+                    // $imagePath = $imageFile->store('post_images', 'public');
+                    $imageName = $imageFile->getClientOriginalName();
+                    $imageNameNew = time() . " - " . $imageName;
+
+                    $imageData = file_get_contents($imageFile->getRealPath());
+                    $imageDataBase64 = base64_encode($imageData);
+
+                    $postImage = PostImage::create([
+                        'post_id' => $post->id,
+                        // 'image_path' => $imagePath,
+                        'image_name' => $imageNameNew,
+                        'image_data' => $imageDataBase64,
+                        'created_at' => $dateTimeNow,
+                    ]);
+                }
 
                 return response()->json([
                     'message' => "Laravel function update successfullry.",
                     'post' => $post
                 ], 201);
+
             }
 
             return response()->json([
@@ -305,6 +366,7 @@ class PostController extends Controller
                 'postID' => $request->postID,
                 'post' => $post,
             ], 204);
+
         } catch (\Exception $error) {
 
             Log::error("Laravel function update error", [
@@ -312,10 +374,10 @@ class PostController extends Controller
                 'trace' => $error->getTraceAsString()
             ]);
 
-            // return response()->json([
-            //     'message' => "Laravel function update error",
-            //     'error' => $e->getMessage()
-            // ], 400);
+            return response()->json([
+                'message' => "Laravel function update error",
+                'error' => $error->getMessage()
+            ], 500);
         }
     }
 
@@ -365,10 +427,10 @@ class PostController extends Controller
                 'trace' => $error->getTraceAsString()
             ]);
 
-            // return response()->json([
-            //     'message' => "Laravel function destroy error",
-            //     'error' => $e->getMessage()
-            // ], 400);
+            return response()->json([
+                'message' => "Laravel function destroy error",
+                'error' => $error->getMessage()
+            ], 500);
         }
     }
 
@@ -407,10 +469,10 @@ class PostController extends Controller
                 'trace' => $error->getTraceAsString()
             ]);
 
-            // return response()->json([
-            //     'message' => "Laravel function recover post error",
-            //     'error' => $e->getMessage()
-            // ], 400);
+            return response()->json([
+                'message' => "Laravel function recover get post error",
+                'error' => $error->getMessage()
+            ], 500);
         }
     }
 
@@ -448,10 +510,10 @@ class PostController extends Controller
                 'trace' => $error->getTraceAsString()
             ]);
 
-            // return response()->json([
-            //     'message' => "Laravel function recover post error",
-            //     'error' => $e->getMessage()
-            // ], 400);
+            return response()->json([
+                'message' => "Laravel function recover post error",
+                'error' => $error->getMessage()
+            ], 500);
         }
     }
 
@@ -502,10 +564,10 @@ class PostController extends Controller
                 'trace' => $error->getTraceAsString()
             ]);
 
-            // return response()->json([
-            //     'message' => "Laravel function postPopLike post error",
-            //     'error' => $e->getMessage()
-            // ], 400);
+            return response()->json([
+                'message' => "Laravel function like post error",
+                'error' => $error->getMessage()
+            ], 500);
         }
     }
 
@@ -554,10 +616,10 @@ class PostController extends Controller
                 'trace' => $error->getTraceAsString()
             ]);
 
-            // return response()->json([
-            //     'message' => "Laravel function postPopDisLike error",
-            //     'error' => $e->getMessage()
-            // ], 400);
+            return response()->json([
+                'message' => "Laravel function dis like post error",
+                'error' => $error->getMessage()
+            ], 500);
         }
     }
 }

@@ -125,7 +125,7 @@ class UserProfileController extends Controller
             if ($request->hasFile('imageFile')) {
 
                 $imageFile = $request->file('imageFile');
-                $imagePath = $imageFile->store('profile_images', 'public');
+                // $imagePath = $imageFile->store('profile_images', 'public');
                 $imageName = $imageFile->getClientOriginalName();
                 $imageNameNew = time() . " - " . $imageName;
 
@@ -141,12 +141,13 @@ class UserProfileController extends Controller
 
                 $userProfile = UserProfile::findOrFail($request->profileID);
 
-                UserProfileImage::create([
-                    'profile_id' => $userProfile->id,
-                    'image_path' => $imagePath,
-                    'image_name' => $imageNameNew,
-                    'image_data' => $imageDataBase64,
-                ]);
+                UserProfileImage::updateOrCreate(
+                    ['profile_id' => $userProfile->id],
+                    [
+                        'image_name' => $imageNameNew,
+                        'image_data' => $imageDataBase64,
+                    ]
+                );
 
                 return response()->json([
                     'message' => "Laravel upload image profile successfully.",

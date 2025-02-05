@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -50,7 +51,7 @@ class Post extends Model
     }
 
     public function postPopularity () : HasMany {
-        return $this->hasMany(PostPopularity::class);
+        return $this->HasMany(PostPopularity::class, 'post_id', 'id');
     }
 
     public function postComment () : BelongsTo {

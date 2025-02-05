@@ -7,11 +7,15 @@
 
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 use App\Models\User;
 use App\Models\StatusUser;
 use App\Models\Post;
+use App\Models\PostImage;
+use App\Models\PostPopularity;
+use App\Models\PostDeletetion;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminManagerPostController;
@@ -21,48 +25,19 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ImageFileUploadController;
 
 Route::apiResource('/imageFileUploads', ImageFileUploadController::class)
-->only(
-    'index', 'create', 'store', 'update', 'show', 'destroy'
-);
+    ->only(
+        'index',
+        'create',
+        'store',
+        'update',
+        'show',
+        'destroy'
+    );
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     $user_req = $request->user();
     $user_login = User::with('userProfile', 'userProfile.userProfileImage')->findOrFail($user_req->id);
     $token = $user_login->createToken($user_login->username)->plainTextToken;
-    // $user_login->user->map(function ($user) {
-    //     return $user ? [
-    //         'id' => $user->id,
-    //         'name' => $user->name,
-    //         'email' => $user->email,
-    //         'username' => $user->username,
-    //         'created_at' => $user->created_at,
-    //         'updated_at' => $user->updated_at,
-    //         'userProfile' => $user->user_profile->map(function ($userProfile) {
-    //             return $userProfile ? [
-    //                 'id' => $userProfile->id,
-    //                 'user_id' => $userProfile->user_id,
-    //                 'title_name' => $userProfile->title_name,
-    //                 'full_name' => $userProfile->full_name,
-    //                 'nick_name' => $userProfile->nick_name,
-    //                 'tel_phone' => $userProfile->tel_name,
-    //                 'birth_day' => $userProfile->birth_day,
-    //                 'created_at' => $userProfile->created_at,
-    //                 'updated_at' => $userProfile->updated_at,
-    //             ] : null;
-    //         }),
-    //         'userProfileImage' => $user->user_profile->user_profile_image->map(function ($profileImage) {
-    //             return $profileImage ? [
-    //                 'id' => $profileImage->id,
-    //                 'profile_id' => $profileImage->profile_id,
-    //                 'image_path' => $profileImage->image_path,
-    //                 'image_name' => $profileImage->image_name,
-    //                 'image_data' => $profileImage->image_data,
-    //                 'created_at' => $profileImage->created_at,
-    //                 'updated_at' => $profileImage->updated_at,
-    //             ] : null;
-    //         }),
-    //     ] : null;
-    // });
     return response()->json([
         'user_login' => $user_login,
         'token' => $token
@@ -88,8 +63,22 @@ Route::apiResource('/user_profiles', UserProfileController::class)->middleware('
 Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 
 // Post
-Route::apiResource('/posts', PostController::class);
-// ->middleware('auth:sanctum');
+Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
+Route::delete('/posts/confirmDelete/{postID}', function ($postID) {
+
+    DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
+    $post = Post::findOrFail($postID);
+    if ($post) {
+        PostImage::where('post_id', $postID)->delete();
+        PostPopularity::where('post_id', $postID)->delete();
+        PostDeletetion::where('post_id', $postID)->delete();
+        $post->delete();
+    }
+    DB::commit(); // บันทึกการเปลี่ยนแปลง
+    return response()->json([
+        'message' => "Laravel API delete success",
+    ], 200);
+});
 
 // Post Popularity
 Route::prefix('/posts/popularity')->group(function () {
@@ -133,18 +122,27 @@ Route::prefix('/admin')->group(function () {
 
     Route::prefix('/posts')->group(function () {
         Route::apiResource('/manager', AdminManagerPostController::class)
-        ->only([
-            'index', 'create', 'store', 'update', 'show', 'destroy'
-        ]);
+            ->only([
+                'index',
+                'create',
+                'store',
+                'update',
+                'show',
+                'destroy'
+            ]);
         Route::post('/blockOrUnBlock/{postID}/{blockStatus}', [AdminManagerPostController::class, 'blockOrUnBlockPost']);
     });
 
     Route::prefix('/userProfiles')->group(function () {
         Route::apiResource('/manager', AdminManagerUserProfileController::class)
-        ->only([
-            'index', 'create', 'store', 'update', 'show', 'destroy'
-        ]);
+            ->only([
+                'index',
+                'create',
+                'store',
+                'update',
+                'show',
+                'destroy'
+            ]);
     });
-
 });
 // ->middleware('auth:sanctum');
