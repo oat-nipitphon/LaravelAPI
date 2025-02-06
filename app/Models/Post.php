@@ -22,13 +22,13 @@ class Post extends Model
     protected $table = 'posts';
     protected $fillable = [
         'id',
+        'user_id',
+        'type_id',
         'post_title',
         'post_content',
-        'type_id',
         'refer',
-        'user_id',
-        'deletetion_status',
         'block_status',
+        'deletetion_status',
         'created_at',
         'updated_at',
 

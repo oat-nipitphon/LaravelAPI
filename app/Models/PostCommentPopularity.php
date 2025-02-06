@@ -11,6 +11,8 @@ class PostCommentPopularity extends Model
     protected $fillable = [
         'id',
         'comment_id',
+        'post_id',
+        'user_id',
         'pop_status',
         'created_at',
         'updated_at'

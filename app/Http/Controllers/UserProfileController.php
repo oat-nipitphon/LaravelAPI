@@ -192,41 +192,47 @@ class UserProfileController extends Controller
             )->findOrFail($id);
 
             $userProfiles = [
-                'id' => $user->id,
-                'email' => $user->email,
-                'name' => $user->name,
-                'username' => $user->username,
-                'statusUser' => [
-                    'id' => $user->statusUser->id,
-                    'status_name' => $user->statusUser->status_name,
-                ],
-                'userProfile' => [
-                    'id' => $user->userProfile->id,
-                    'title_name' => $user->userProfile->title_name,
-                    'full_name' => $user->userProfile->full_name,
-                    'nick_name' => $user->userProfile->nick_name,
-                    'tel_phone' => $user->userProfile->tel_phone,
-                    'birth_day' => $user->userProfile->birth_day,
-                ],
-                'userProfileContact' => $user->userProfileContact->map(function ($contact) {
+                'id' => $user->id ?? null,
+                'email' => $user->email ?? null,
+                'name' => $user->name ?? null,
+                'username' => $user->username ?? null,
+                'statusUser' => $user->statusUser ?[
+                    'id' => $user->statusUser->id ?? null,
+                    'status_name' => $user->statusUser->status_name ?? null,
+                ] : null,
+                'userProfile' => $user->userProfile ? [
+                    'id' => $user->userProfile->id ?? null,
+                    'title_name' => $user->userProfile->title_name ?? null,
+                    'full_name' => $user->userProfile->full_name ?? null,
+                    'nick_name' => $user->userProfile->nick_name ?? null,
+                    'tel_phone' => $user->userProfile->tel_phone ?? null,
+                    'birth_day' => $user->userProfile->birth_day ?? null,
+                ] : null,
+                'userProfileContact' => $user->userProfileContact?->map(function ($contact) {
                     return [
-                        'id' => $contact->id,
-                        'contact_name' => $contact->contact_name,
-                        'contact_link_path' => $contact->contact_link_path,
-                        'contact_icon_name' => $contact->contact_icon_name,
-                        'contact_icon_url' => $contact->contact_icon_url,
+                        'id' => $contact->id ?? null,
+                        'contact_name' => $contact->contact_name ?? null,
+                        'contact_link_path' => $contact->contact_link_path ?? null,
+                        'contact_icon_name' => $contact->contact_icon_name ?? null,
+                        'contact_icon_url' => $contact->contact_icon_url ?? null,
                         'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
-                        . base64_encode($contact->contact_icon_data) : null,
+                        . base64_encode($contact->contact_icon_data) : null ?? null,
                     ];
-                }),
-                'userProfileImage' => $user->userProfile->userProfileImage->map(function ($profileImage) {
+                }) ?? null,
+                'userProfileImage' => $user->userProfile->userProfileImage?->map(function ($profileImage) {
                     return [
-                        'id' => $profileImage->id,
-                        'imagePath' => $profileImage->image_path,
-                        'imageName' => $profileImage->image_name,
-                        'imageData' => $profileImage->image_data,
+                        'id' => $profileImage->id ?? null,
+                        'imagePath' => $profileImage->image_path ?? null,
+                        'imageName' => $profileImage->image_name ?? null,
+                        'imageData' => $profileImage->image_data ?? null,
                     ];
-                }),
+                }) ?? null,
+                'userLogin' => $user->userLogin ? [
+                    'id' => $user->userLogin->id ?? null,
+                    'statusLogin' => $user->userLogin->status_login ?? null,
+                    'createdAt' => $user->userLogin->created_at ?? null,
+                    'updatedAt' => $user->userLogin->updated_at ?? null,
+                ] : null,
             ];
 
             if ($userProfiles) {
@@ -239,13 +245,13 @@ class UserProfileController extends Controller
             return response()->json([
                 'message' => "laravel get user profile not success.",
                 'userProfiles' => $userProfiles
-            ], 400);
+            ], 204);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "laravel user profile function show error",
                 'error' => $e->getMessage(),
-
-            ], 401);
+            ], 500);
         }
     }
 

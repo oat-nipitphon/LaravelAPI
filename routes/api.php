@@ -22,22 +22,13 @@ use App\Http\Controllers\AdminManagerPostController;
 use App\Http\Controllers\AdminManagerUserProfileController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\PostController;
-use App\Http\Controllers\ImageFileUploadController;
 
-Route::apiResource('/imageFileUploads', ImageFileUploadController::class)
-    ->only(
-        'index',
-        'create',
-        'store',
-        'update',
-        'show',
-        'destroy'
-    );
-
+// User
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     $user_req = $request->user();
-    $user_login = User::with('userProfile', 'userProfile.userProfileImage')->findOrFail($user_req->id);
+    $user_login = User::with('userProfile')->findOrFail($user_req->id);
     $token = $user_login->createToken($user_login->username)->plainTextToken;
+
     return response()->json([
         'user_login' => $user_login,
         'token' => $token
@@ -46,7 +37,7 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 Route::get('/status_user', function () {
     return response()->json([
-        'status_user' => StatusUser::all()
+        'userStatus' => StatusUser::all()
     ], 200);
 });
 
@@ -55,14 +46,14 @@ Route::post('/forget_your_password', [AuthController::class, 'forgetYourPassword
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-
+// Users
 Route::apiResource('/users', App\Http\Controllers\UserController::class)->middleware('auth:sanctum');
 
-
+// User Profiles
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
 Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 
-// Post
+// Posts
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
 Route::delete('/posts/confirmDelete/{postID}', function ($postID) {
 

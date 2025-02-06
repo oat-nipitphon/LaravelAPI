@@ -12,7 +12,7 @@ class StatusUser extends Model
      *
      * @var string
      */
-    protected $table = 'status_users';
+    protected $table = 'user_status';
     protected $fillable = [
         'id',
         'status_name'
