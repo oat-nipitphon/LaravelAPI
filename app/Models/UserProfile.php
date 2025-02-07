@@ -30,9 +30,6 @@ class UserProfile extends Model
         return $this->HasOne(User::class);
     }
 
-    public function userProfileImage () : HasMany {
-        return $this->HasMany(UserProfileImage::class, 'profile_id', 'id');
-    }
 
 
 }

@@ -23,11 +23,11 @@ class PostController extends Controller
             $posts = Post::with([
                 'postType',
                 'postImage',
-                'postPopularity',
+                // 'postPopularity',
                 'user',
                 'user.userProfile',
                 'user.userProfileContact',
-                'user.userProfile.userProfileImage',
+                'user.userProfileImage',
             ])
                 ->where('deletetion_status', 'false')
                 ->where('block_status', 'false')
@@ -48,14 +48,14 @@ class PostController extends Controller
                             'name' => $post->postType->type_name,
                         ] : null,
 
-                        'postPopularity' => $post->postPopularity->map(function ($postPop) {
-                            return $postPop ? [
-                                'id' => $postPop->id,
-                                'postID' => $postPop->post_id,
-                                'userID' => $postPop->user_id,
-                                'status' => $postPop->pop_status,
-                            ] : null;
-                        }),
+                        // 'postPopularity' => $post->postPopularity->map(function ($postPop) {
+                        //     return $postPop ? [
+                        //         'id' => $postPop->id,
+                        //         'postID' => $postPop->post_id,
+                        //         'userID' => $postPop->user_id,
+                        //         'status' => $postPop->pop_status,
+                        //     ] : null;
+                        // }),
 
                         'postImage' => $post->postImage->map(function ($image) {
                             return $image ? [
@@ -85,12 +85,12 @@ class PostController extends Controller
                             'updatedAt' => $post->user->userProfile->updated_at,
                         ] : null,
 
-                        'userProfileImage' => $post->user->userProfile->userProfileImage->map(function ($profileImage) {
+                        'userProfileImage' => $post->user->userProfileImage->map(function ($profileImage) {
                             return $profileImage ? [
                                 'id' => $profileImage->id,
                                 'imagePath' => $profileImage->image_path,
                                 'imageName' => $profileImage->image_name,
-                                'imageData' => $profileImage->image_data,
+                                'imageData' => $profileImage->image_data ? 'data:image/png;base64,' . base64_encode($profileImage->image_data) : null,
                             ] : null;
                         }),
 
@@ -126,10 +126,10 @@ class PostController extends Controller
                 'trace' => $error->getTraceAsString()
             ]);
 
-            // return response()->json([
-            //     'message' => "Laravel function get posts error",
-            //     'error' => $e->getMessage()
-            // ], 400);
+            return response()->json([
+                'message' => "Laravel function get posts error",
+                'error' => $error->getMessage()
+            ], 500);
         }
     }
 
@@ -141,35 +141,24 @@ class PostController extends Controller
         try {
 
             $validated = $request->validate([
-                'userID' => 'required|string',
+                'userID' => 'required|integer',
                 'title' => 'required|string',
                 'content' => 'required|string',
                 'refer' => 'required|string',
-                'typeID' => 'required|string',
-                'newType' => 'required|string',
+                'typeID' => 'required|integer',
                 'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
-
-            $postTypeID = $request->typeID;
-
-            if ($postTypeID === "new") {
-                $newPostType = PostType::create([
-                    'post_type_name' => $request->newType
-                ]);
-                $postTypeID = $newPostType->id;
-            }
-
             $post = Post::create([
                 'post_title' => $validated['title'],
                 'post_content' => $validated['content'],
                 'refer' => $validated['refer'],
-                'type_id' => $postTypeID,
+                'type_id' => $validated['typeID'],
                 'user_id' => $validated['userID'],
-                'deletetion_status' => 'false', // status 0 == false // status 1 == true
-                'block_status' => 'false',
+                'deletetion_status' => "false", // status 0 == false // status 1 == true
+                'block_status' => "false",
                 'created_at' => $dateTimeNow,
             ]);
 
@@ -190,20 +179,20 @@ class PostController extends Controller
                     'image_data' => $imageDataBase64,
                     'created_at' => $dateTimeNow,
                 ]);
+            }
 
-                if ($post && $postImage) {
-                    return response()->json([
-                        'message' => 'Laravel function store successfully.',
-                        'post' => $post,
-                    ], 201);
-                }
+            if (!$post && !$postImage) {
+                return response()->json([
+                    'message' => "laravel api store response false"
+                ], 204);
             }
 
             return response()->json([
-                'message' => "Laravel function store response false",
+                'message' => 'Laravel function store successfully.',
                 'post' => $post,
-                'postImage' => $postImage
-            ], 204);
+                'status' => 201
+            ], 201);
+
         } catch (\Exception $error) {
 
             Log::error("Laravel function store error", [

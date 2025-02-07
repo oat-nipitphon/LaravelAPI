@@ -33,7 +33,9 @@ class User extends Authenticatable
         'email',
         'username',
         'password',
-        'status_id'
+        'status_id',
+        'created_at',
+        'updated_at',
     ];
 
     /**
@@ -80,6 +82,10 @@ class User extends Authenticatable
 
     public function userProfile () : HasOne {
         return $this->HasOne(UserProfile::class);
+    }
+
+    public function userProfileImage () : HasMany {
+        return $this->HasMany(UserProfileImage::class, 'user_id', 'id');
     }
 
     public function userLogin (): HasMany {

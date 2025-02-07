@@ -15,7 +15,7 @@ class UserProfileImage extends Model
     protected $table = 'user_profile_images';
     protected $fillable = [
         'id',
-        'profile_id',
+        'user_id',
         'image_name',
         'image_path',
         'image_url',
@@ -25,7 +25,7 @@ class UserProfileImage extends Model
     ];
 
     public function userProfile () : BelongsTo {
-        return $this->belongsTo(UserProfile::class, 'profile_id', 'id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
 }
