@@ -31,7 +31,7 @@ class AuthController extends Controller
                 'username' => $validate['username'],
                 'email' => $validate['email'],
                 'password' => Hash::make($validate['password']),
-                'status_id' =>$validate['statusID'],
+                'status_id' => $validate['statusID'],
                 'created_at' => $dateTimeNow
             ]);
 
@@ -69,10 +69,9 @@ class AuthController extends Controller
                 'userProfile' => false,
                 'user_login' => false,
             ], 204);
-
         } catch (\Exception $error) {
             return response()->json([
-                'message' => "backend api function register error -> ". $error->getMessage()
+                'message' => "backend api function register error -> " . $error->getMessage()
             ], 500);
         }
     }
@@ -138,7 +137,6 @@ class AuthController extends Controller
 
             $token = $user->createToken($user->username)->plainTextToken;
 
-
             if ($user) {
 
                 $dateTimeNow = Carbon::now('Asia/Bangkok');
@@ -146,15 +144,14 @@ class AuthController extends Controller
                     'user_id' => $user->id,
                     'status_login' => "online",
                     'created_at' => $dateTimeNow,
-                    'updated_at' => $dateTimeNow,
                 ]);
 
                 if ($userLogin) {
 
                     return response()->json([
+                        'status' => 200,
                         'message' => "Login successfullry.",
                         'token' => $token,
-                        'status' => true,
                         'user' => $user,
                         'user_login' => $userLogin,
 
@@ -178,46 +175,33 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
+            $user = $request->user();
+            $userLogout = UserLogin::where('user_id', $user->id)->first();
+            if (!empty($userLogout)) {
+                $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
+                $userLogout->update([
+                    'status_login' => "offline",
+                    'updated_at' => $dateTimeNow
+                ]);
 
-            if ($user = $request->user()) {
+                $user->tokens()->delete();
 
+                return response()->json([
+                    'status' => 200,
+                    'message' => "Laravel function logout successfullry",
+                ], 200);
 
-                if ($user) {
-
-                    $userLogin = UserLogin::where('user_id', $user->id)->first();
-
-                    $dateTimeNow = Carbon::now('Asia/Bangkok');
-
-                    if ($userLogin) {
-
-                        $userLogin->update([
-                            'status_login' => "offline",
-                            'updated_at' => $dateTimeNow
-                        ]);
-
-                        $user->tokens()->delete();
-
-                        return response()->json([
-                            'message' => "Login successfullry.",
-                            'status' => true,
-                            'user' => $user,
-                            'user_login' => $userLogin,
-
-                        ], 200);
-                    }
-                }
+            } else {
+                return response()->json([
+                    'status' => 204,
+                    'message' => "Laravel function logout request user false",
+                    'requestUser' => $request->user()
+                ]);
             }
-
-            return response()->json([
-                'message' => "Login not success.",
-                'status' => false,
-                'user_login' => $userLogin,
-            ], 400);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error during logout.',
-                'error' => $e->getMessage()
+                'message' => 'Laravel function logout error ' . $e->getMessage()
             ], 500);
         }
     }

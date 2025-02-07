@@ -24,7 +24,7 @@ class UserProfileImage extends Model
         'updated_at'
     ];
 
-    public function userProfile () : BelongsTo {
+    public function users () : BelongsTo {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 

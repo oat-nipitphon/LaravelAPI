@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminManagerUserProfile;
 use App\Models\UserProfile;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminManagerUserProfileController extends Controller
@@ -15,64 +16,78 @@ class AdminManagerUserProfileController extends Controller
     {
         try {
 
-            $userProfiles = UserProfile::with([
+            $user = User::with(
+                'userProfileContact',
                 'userProfileImage',
-                'user',
-                'user.userProfileContact',
-                'user.statusUser',
-                'user.posts',
-                'user.userFollowersProfile',
-                'user.userFollowersAccount',
-                'user.userLogin',
-                'user.latestUserLogin',
-            ])
-                ->get()
-                ->map(function ($profile) {
+                'userLogin',
+                'statusUser',
+                'posts',
+                'userFollowersProfile',
+                'userFollowersAccount'
+            )->get();
+
+            dd($user);
+            $userProfiles = [
+                'id' => $user->id ?? null,
+                'email' => $user->email ?? null,
+                'name' => $user->name ?? null,
+                'username' => $user->username ?? null,
+                'statusUser' => $user->statusUser ?[
+                    'id' => $user->statusUser->id ?? null,
+                    'status_name' => $user->statusUser->status_name ?? null,
+                ] : null,
+                'userProfile' => $user->userProfile ? [
+                    'id' => $user->userProfile->id ?? null,
+                    'title_name' => $user->userProfile->title_name ?? null,
+                    'full_name' => $user->userProfile->full_name ?? null,
+                    'nick_name' => $user->userProfile->nick_name ?? null,
+                    'tel_phone' => $user->userProfile->tel_phone ?? null,
+                    'birth_day' => $user->userProfile->birth_day ?? null,
+                ] : null,
+                'userProfileContact' => $user->userProfileContact?->map(function ($contact) {
                     return [
-                        'id' => $profile->id,
-                        'full_name' => $profile->full_name,
-                        'title_name' => $profile->title_name,
-                        'user' => [
-                            'id' => $profile->user->id,
-                            'name' => $profile->user->name,
-                            'email' => $profile->user->email,
-                            'status_user' => $profile->user->statusUser->status_name ?? null,
-                            'posts' => $profile->user->posts, // เอาทั้งหมด
-                            'latest_post' => $profile->user->posts->sortByDesc('created_at')->first(), // เอาโพสต์ล่าสุด
-                            'user_login' => $profile->user->userLogin->sortByDesc('created_at')->first() ?? null, // เอาข้อมูล login ล่าสุด
-                        ],
-                        'user_contact' => $profile->user->userProfileContact->map(function ($contact) {
-                            return [
-                                'id' => $contact->id,
-                                'contact_name' => $contact->contact_name,
-                                'contact_link_path' => $contact->contact_link_path,
-                                'contact_icon_name' => $contact->contact_icon_name,
-                                'contact_icon_url' => $contact->contact_icon_url,
-                                'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
-                                . base64_encode($contact->contact_icon_data) : null,
-                            ];
-                        }),
+                        'id' => $contact->id ?? null,
+                        'contact_name' => $contact->contact_name ?? null,
+                        'contact_link_path' => $contact->contact_link_path ?? null,
+                        'contact_icon_name' => $contact->contact_icon_name ?? null,
+                        'contact_icon_url' => $contact->contact_icon_url ?? null,
+                        'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
+                        . base64_encode($contact->contact_icon_data) : null ?? null,
                     ];
-                });
+                }) ?? null,
+                'userProfileImage' => $user->userProfile->userProfileImage?->map(function ($profileImage) {
+                    return [
+                        'id' => $profileImage->id ?? null,
+                        'imagePath' => $profileImage->image_path ?? null,
+                        'imageName' => $profileImage->image_name ?? null,
+                        'imageData' => $profileImage->image_data ?? null,
+                    ];
+                }) ?? null,
+                'userLogin' => $user->userLogin ? [
+                    'id' => $user->userLogin->id ?? null,
+                    'statusLogin' => $user->userLogin->status_login ?? null,
+                    'createdAt' => $user->userLogin->created_at ?? null,
+                    'updatedAt' => $user->userLogin->updated_at ?? null,
+                ] : null,
+            ];
 
             if ($userProfiles) {
                 return response()->json([
                     'message' => "Laravel get user profile detail success",
                     'userProfiles' => $userProfiles
                 ], 200);
-
             }
 
             return response()->json([
                 'message' => "Laravel admin manager user profile false.",
                 'userProfiles' => $userProfiles
-            ], 400);
+            ], 204);
 
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel admin manager user profile error.",
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 

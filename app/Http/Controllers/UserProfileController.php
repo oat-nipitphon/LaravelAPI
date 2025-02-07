@@ -183,7 +183,7 @@ class UserProfileController extends Controller
 
             $user = User::with(
                 'userProfileContact',
-                'userProfile.userProfileImage',
+                'user.userProfileImage',
                 'userLogin',
                 'statusUser',
                 'posts',
