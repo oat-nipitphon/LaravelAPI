@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 use App\Models\Post;
+use App\Models\PostType;
+use App\Models\PostImage;
 use App\Models\PostDeletetion;
 use App\Models\PostPopularity;
-use App\Models\PostImage;
-use App\Models\PostType;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
+
 
 class PostController extends Controller
 {
@@ -23,7 +26,7 @@ class PostController extends Controller
             $posts = Post::with([
                 'postType',
                 'postImage',
-                // 'postPopularity',
+                'postPopularity',
                 'user',
                 'user.userProfile',
                 'user.userProfileContact',
@@ -48,14 +51,14 @@ class PostController extends Controller
                             'name' => $post->postType->type_name,
                         ] : null,
 
-                        // 'postPopularity' => $post->postPopularity->map(function ($postPop) {
-                        //     return $postPop ? [
-                        //         'id' => $postPop->id,
-                        //         'postID' => $postPop->post_id,
-                        //         'userID' => $postPop->user_id,
-                        //         'status' => $postPop->pop_status,
-                        //     ] : null;
-                        // }),
+                        'postPopularity' => $post->postPopularity->map(function ($postPop) {
+                            return $postPop ? [
+                                'id' => $postPop->id,
+                                'postID' => $postPop->post_id,
+                                'userID' => $postPop->user_id,
+                                'status' => $postPop->pop_status,
+                            ] : null;
+                        }),
 
                         'postImage' => $post->postImage->map(function ($image) {
                             return $image ? [
@@ -162,26 +165,20 @@ class PostController extends Controller
                 'created_at' => $dateTimeNow,
             ]);
 
-            if ($request->hasFile('imageFile')) {
+            if ($request->file('imageFile')) {
 
                 $imageFile = $request->file('imageFile');
-                // $imagePath = $imageFile->store('post_images', 'public');
-                $imageName = $imageFile->getClientOriginalName();
-                $imageNameNew = time() . " - " . $imageName;
-
                 $imageData = file_get_contents($imageFile->getRealPath());
                 $imageDataBase64 = base64_encode($imageData);
 
                 $postImage = PostImage::create([
                     'post_id' => $post->id,
-                    // 'image_path' => $imagePath,
-                    'image_name' => $imageNameNew,
                     'image_data' => $imageDataBase64,
                     'created_at' => $dateTimeNow,
                 ]);
             }
 
-            if (!$post && !$postImage) {
+            if ($post) {
                 return response()->json([
                     'message' => "laravel api store response false"
                 ], 204);
@@ -279,81 +276,59 @@ class PostController extends Controller
         try {
 
             $validated = $request->validate([
-                'postID' => 'required|string',
-                'userID' => 'required|string',
+                'userID' => 'required|integer',
+                'postID' => 'required|integer',
                 'title' => 'required|string',
                 'content' => 'required|string',
                 'refer' => 'required|string',
-                'typeID' => 'required|string',
-                'newType' => 'required|string',
+                'typeID' => 'required|integer',
                 'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
-            $postTypeID = $request->typeID;
-            if ($postTypeID === "new") {
-                $newPostType = PostType::create([
-                    'post_type_name' => $request->newType
-                ]);
-                $postTypeID = $newPostType->id;
-            }
+            $post = Post::findOrFail($request->postID);
 
-            dd([
-                'postTypeID' => $postTypeID,
-                'validated' => $validated,
-            ]);
 
-            $postTypeID = $request->typeID;
-            if ($request->newType) {
-                $newPostType = PostType::create([
-                    'post_type_name' => $request->newType
-                ]);
-                $postTypeID = $newPostType->id;
-            }
 
-            $post = Post::findOrFail($validated['postID']);
             if ($post) {
 
                 $post->update([
-                    'post_title' => $validated[''],
-                    'post_content' => $validated[''],
-                    'type_id' => $postTypeID,
-                    'refer' => $validated[''],
-                    'user_id' => $validated[''],
+                    'post_title' => $validated['title'],
+                    'post_content' => $validated['content'],
+                    'refer' => $validated['refer'],
+                    'user_id' => $validated['userID'],
+                    'type_id' => $validated['typeID'],
                     'updated_at' => $dateTimeNow,
                 ]);
 
                 if ($request->hasFile('imageFile')) {
 
-                    $imageFile =  $validated->file('imageFile');
-                    // $imagePath = $imageFile->store('post_images', 'public');
-                    $imageName = $imageFile->getClientOriginalName();
-                    $imageNameNew = time() . " - " . $imageName;
-
+                    $imageFile = $request->file('imageFile');
                     $imageData = file_get_contents($imageFile->getRealPath());
                     $imageDataBase64 = base64_encode($imageData);
 
-                    $postImage = PostImage::create([
+                    $postImage = PostImage::where('post_id', $request->postID)->first();
+
+                    $postImage->update([
                         'post_id' => $post->id,
-                        // 'image_path' => $imagePath,
-                        'image_name' => $imageNameNew,
                         'image_data' => $imageDataBase64,
-                        'created_at' => $dateTimeNow,
+                        'updated_at' => $dateTimeNow
                     ]);
                 }
+            }
 
+            if ($post) {
                 return response()->json([
-                    'message' => "Laravel function update successfullry.",
-                    'post' => $post
-                ], 201);
-
+                    'message' => "Laravel function update post success.",
+                    'post' => $post,
+                    'status' => 200
+                ], 200);
             }
 
             return response()->json([
-                'message' => "Laravel function update response false.",
-                'postID' => $request->postID,
-                'post' => $post,
+                'message' => "Laravel function update response false",
+                'postID' => $request->postID
             ], 204);
 
         } catch (\Exception $error) {
@@ -377,38 +352,21 @@ class PostController extends Controller
     {
         try {
 
+            DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
+
             $post = Post::findOrFail($id);
-
-            $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
-
             if ($post) {
-
-                $post->update([
-                    'deletetion_status' => 'true',
-                ]);
-
-
-                $postDeletetion = PostDeletetion::create(
-                    [
-                        'post_id' => $post->id,
-                        'date_time_delete' => $dateTime,
-                        'deletetion_status' => 'true',
-                    ]
-                );
+                PostImage::where('post_id', $id)->delete();
+                PostPopularity::where('post_id', $id)->delete();
+                PostDeletetion::where('post_id', $id)->delete();
+                $post->delete();
             }
-
-            if ($post && $postDeletetion) {
-                return response()->json([
-                    'message' => "Post function destroy successfully.",
-                    'postDeletetion' => $postDeletetion
-                ], 200);
-            }
+            DB::commit(); // บันทึกการเปลี่ยนแปลง
 
             return response()->json([
-                'message' => "Post function destroy response false !!",
-                'id' => $id,
-                'post' => $post
-            ], 204);
+                'message' => "Laravel API delete success",
+            ], 200);
+
         } catch (\Exception $error) {
 
             Log::error("Laravel function destroy error", [
@@ -419,6 +377,60 @@ class PostController extends Controller
             return response()->json([
                 'message' => "Laravel function destroy error",
                 'error' => $error->getMessage()
+            ], 500);
+        }
+    }
+
+    public function postStore (string $postID) {
+        try {
+
+            if ($postID) {
+                $post = Post::findOrFail($postID);
+
+                $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+
+                if ($post) {
+
+                    $post->update([
+                        'deletetion_status' => 'true',
+                    ]);
+
+                    $postDeletetion = PostDeletetion::create(
+                        [
+                            'post_id' => $post->id,
+                            'date_time_delete' => $dateTime,
+                            'deletetion_status' => 'true',
+                        ]
+                    );
+
+                    if ($postDeletetion) {
+
+                        return response()->json([
+                            'message' => "Post function destroy successfully.",
+                            'postDeletetion' => $postDeletetion
+                        ], 200);
+
+                    } else {
+                        dd($postDeletetion);
+                    }
+
+                } else {
+                    dd($post);
+                }
+
+            } else {
+                dd($postID);
+            }
+
+            return response()->json([
+                'message' => "Post function destroy response false !!",
+                'id' => $postID,
+                'post' => $post
+            ], 204);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "Laravel function postStore error " . $error->getMessage()
             ], 500);
         }
     }

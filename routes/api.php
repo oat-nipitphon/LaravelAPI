@@ -94,24 +94,9 @@ Route::get('/postTypes', function () {
 
 
 // Posts
-Route::apiResource('/posts', PostController::class);
-// ->middleware('auth:sanctum');
-
-Route::delete('/posts/confirmDelete/{postID}', function ($postID) {
-    DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
-    $post = Post::findOrFail($postID);
-    if ($post) {
-        PostImage::where('post_id', $postID)->delete();
-        PostPopularity::where('post_id', $postID)->delete();
-        PostDeletetion::where('post_id', $postID)->delete();
-        $post->delete();
-    }
-    DB::commit(); // บันทึกการเปลี่ยนแปลง
-    return response()->json([
-        'message' => "Laravel API delete success",
-    ], 200);
-});
-
+Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
+Route::post('/posts/store/{postID}', [PostController::class, 'postStore']);
+Route::post('/posts/update', [PostController::class, 'update'])->middleware('auth:sanctum');
 
 Route::get('/get_posts', function () {
     try {

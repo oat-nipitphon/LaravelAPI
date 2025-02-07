@@ -51,7 +51,7 @@ class Post extends Model
     }
 
     public function postPopularity () : HasMany {
-        return $this->HasMany(PostPopularity::class, 'post_id', 'id');
+        return $this->HasMany(PostPopularity::class);
     }
 
     public function postComment () : BelongsTo {

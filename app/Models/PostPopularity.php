@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PostPopularity extends Model
 {
-    protected $table = 'post_popularitys';
+    protected $table = 'post_popularity';
     protected $fillable = [
         'id',
         'post_id',
