@@ -12,6 +12,7 @@ class UserProfileContact extends Model
         'id',
         'user_id',
         'contact_name',
+        'contact_link_address',
         'contact_link_path',
         'contact_icon_name',
         'contact_icon_url',

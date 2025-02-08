@@ -20,7 +20,7 @@ class UserProfileController extends Controller
     {
         try {
 
-            $user_profile = User::with(
+            $userProfiles = User::with(
                 'userProfileContact',
                 'userProfile.userProfileImage',
                 'userLogin',
@@ -33,7 +33,7 @@ class UserProfileController extends Controller
 
             return response()->json([
                 'message' => "Laravel api user profile success.",
-                'user_profile' => $user_profile
+                'user_profile' => $userProfiles
             ], 200);
 
         } catch (\Exception $e) {
@@ -60,54 +60,46 @@ class UserProfileController extends Controller
         try {
 
             $validated = $request->validate([
-                'userID' => 'required|integer',
-                'name' => 'required|string',
-                'email' => 'required|string',
-                'userName' => 'required|string',
-                'statusID' => 'required|integer',
                 'profileID' => 'required|integer',
                 'titleName' => 'required|string',
                 'fullName' => 'required|string',
                 'nickName' => 'required|string',
                 'telPhone' => 'required|string',
                 'birthDay' => 'required|date',
+
             ]);
 
+            $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+            $birthDay = Carbon::parse($validated['birthDay'])->format('Y-m-d');
             $userProfile = UserProfile::findOrFail($validated['profileID']);
 
             if ($userProfile) {
 
-                $birthDay = Carbon::parse($validated['birthDay'])->format('Y-m-d');
-                $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
-                $userProfile->user->update([
+                $userProfile->update([
                     'title_name' => $validated['titleName'],
                     'full_name' => $validated['fullName'],
                     'nick_name' => $validated['nickName'],
                     'tel_phone' => $validated['telPhone'],
                     'birth_day' => $birthDay,
                     'updated_at' => $dateTime,
-                    'name' => $validated['name'],
-                    'email' => $validated['email'],
-                    'username' => $validated['userName'],
-                    'status_id' => $validated['statusID'],
                 ]);
 
                 return response()->json([
-                    'message' => 'Profile updated successfully.',
+                    'message' => 'update user profile success',
                     'userProfile' => $userProfile,
                     'status' => true
                 ], 200);
-
             }
 
             return response()->json([
-                'message' => "Profile update not success.",
+                'message' => "update user profile false",
                 'status' => false
             ], 400);
 
         } catch (\Exception $error) {
             return response()->json([
-                'message' => 'Laravel api function error :: ',
+                'VueLaravelAPI' => "store apiUpdateDetailUserProfile -> controller function store",
+                'message' => 'function error :: ',
                 'error' => $error->getMessage()
             ], 500);
         }
@@ -153,16 +145,12 @@ class UserProfileController extends Controller
                     'message' => "Laravel upload image profile successfully.",
                     'image_data' => $imageDataBase64,
                 ], 201);
-
             }
 
 
             return response()->json([
                 'message' => "No image file provided.",
             ], 400);
-
-
-
         } catch (\Exception $e) {
 
             Log::error('Image upload error: ' . $e->getMessage());
@@ -181,9 +169,9 @@ class UserProfileController extends Controller
     {
         try {
 
-            $user = User::with(
+            $userProfiles = User::with(
                 'userProfileContact',
-                'user.userProfileImage',
+                'userProfileImage',
                 'userLogin',
                 'statusUser',
                 'posts',
@@ -192,23 +180,23 @@ class UserProfileController extends Controller
             )->findOrFail($id);
 
             $userProfiles = [
-                'id' => $user->id ?? null,
-                'email' => $user->email ?? null,
-                'name' => $user->name ?? null,
-                'username' => $user->username ?? null,
-                'statusUser' => $user->statusUser ?[
-                    'id' => $user->statusUser->id ?? null,
-                    'status_name' => $user->statusUser->status_name ?? null,
+                'id' => $userProfiles->id ?? null,
+                'email' => $userProfiles->email ?? null,
+                'name' => $userProfiles->name ?? null,
+                'username' => $userProfiles->username ?? null,
+                'statusUser' => $userProfiles->statusUser ? [
+                    'id' => $userProfiles->statusUser->id ?? null,
+                    'status_name' => $userProfiles->statusUser->status_name ?? null,
                 ] : null,
-                'userProfile' => $user->userProfile ? [
-                    'id' => $user->userProfile->id ?? null,
-                    'title_name' => $user->userProfile->title_name ?? null,
-                    'full_name' => $user->userProfile->full_name ?? null,
-                    'nick_name' => $user->userProfile->nick_name ?? null,
-                    'tel_phone' => $user->userProfile->tel_phone ?? null,
-                    'birth_day' => $user->userProfile->birth_day ?? null,
+                'userProfile' => $userProfiles->userProfile ? [
+                    'id' => $userProfiles->userProfile->id ?? null,
+                    'title_name' => $userProfiles->userProfile->title_name ?? null,
+                    'full_name' => $userProfiles->userProfile->full_name ?? null,
+                    'nick_name' => $userProfiles->userProfile->nick_name ?? null,
+                    'tel_phone' => $userProfiles->userProfile->tel_phone ?? null,
+                    'birth_day' => $userProfiles->userProfile->birth_day ?? null,
                 ] : null,
-                'userProfileContact' => $user->userProfileContact?->map(function ($contact) {
+                'userProfileContact' => $userProfiles->userProfileContact?->map(function ($contact) {
                     return [
                         'id' => $contact->id ?? null,
                         'contact_name' => $contact->contact_name ?? null,
@@ -216,23 +204,18 @@ class UserProfileController extends Controller
                         'contact_icon_name' => $contact->contact_icon_name ?? null,
                         'contact_icon_url' => $contact->contact_icon_url ?? null,
                         'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
-                        . base64_encode($contact->contact_icon_data) : null ?? null,
+                            . base64_encode($contact->contact_icon_data) : null ?? null,
                     ];
                 }) ?? null,
-                'userProfileImage' => $user->userProfile->userProfileImage?->map(function ($profileImage) {
+                'userProfileImage' => $userProfiles->userProfileImage?->map(function ($profileImage) {
                     return [
                         'id' => $profileImage->id ?? null,
                         'imagePath' => $profileImage->image_path ?? null,
                         'imageName' => $profileImage->image_name ?? null,
-                        'imageData' => $profileImage->image_data ?? null,
+                        'imageData' => 'data:image/png;base64,' . base64_encode($profileImage->image_data) ??
+                        "https://scontent.fkkc3-1.fna.fbcdn.net/v/t39.30808-6/461897536_3707658799483986_794048670785055411_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=cc71e4&_nc_eui2=AeHVG0UH5FgwbVkdtl70b39it0I862Qbciu3QjzrZBtyK4PmJExwkjQwGNMpc0Sbm9HeXRE2Yi7Fvc_GrvrUrXJN&_nc_ohc=_8IVpzSUJz8Q7kNvgHrEAqC&_nc_oc=AdiyR3fiYNa1nU66Bls4Nb4I6H4rfNRXnPjAHaIZmi5Ok1Ea6cf98AHoc2eD3yBPfT0whk9DJecG4asGH43dv1dt&_nc_zt=23&_nc_ht=scontent.fkkc3-1.fna&_nc_gid=AkN_W4uZTFprgLGSWFrENZx&oh=00_AYCw9q71675W9Lkdf2lM4FSnNCyzhNZ1vmvURll1eRMLQw&oe=67AD49B1",
                     ];
                 }) ?? null,
-                'userLogin' => $user->userLogin ? [
-                    'id' => $user->userLogin->id ?? null,
-                    'statusLogin' => $user->userLogin->status_login ?? null,
-                    'createdAt' => $user->userLogin->created_at ?? null,
-                    'updatedAt' => $user->userLogin->updated_at ?? null,
-                ] : null,
             ];
 
             if ($userProfiles) {

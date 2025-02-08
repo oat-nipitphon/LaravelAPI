@@ -24,43 +24,7 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\PostController;
 
 // User
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    $user_req = $request->user();
-    $user_login = User::with('userProfile', 'userProfileImage')->findOrFail($user_req->id);
-    $token = $user_login->createToken($user_login->username)->plainTextToken;
-
-    $user_login = [
-        'id' => $user_login->id,
-        'name' => $user_login->name,
-        'email' => $user_login->email,
-        'username' => $user_login->username,
-        'status_id' => $user_login->status_id,
-        'created_at' => $user_login->created_at,
-        'updated_at' => $user_login->updated_at,
-        'userProfile' => $user_login->userProfile ? [
-            'id' => $user_login->userProfile->id,
-            'user_id' => $user_login->userProfile->user_id,
-            'title_name' => $user_login->userProfile->title_name,
-            'full_name' => $user_login->userProfile->full_name,
-            'nick_name' => $user_login->userProfile->nick_name,
-            'tel_phone' => $user_login->userProfile->tel_name,
-            'birth_day' => $user_login->userProfile->birth_day,
-            'created_at' => $user_login->userProfile->created_at,
-            'updated_at' => $user_login->userProfile->updated_at,
-        ] : null,
-        'userProfileImage' => $user_login->userProfileImage->map(function ($image) {
-            return $image ? [
-                'id' => $image->id,
-                'imageData' => 'data:image/png;base64,'. base64_encode($image->image_data),
-            ] : null;
-        }),
-    ];
-
-    return response()->json([
-        'user_login' => $user_login,
-        'token' => $token
-    ], 200);
-});
+Route::middleware(['auth:sanctum'])->get('/user', [AuthController::class, 'index']);
 
 Route::get('/status_user', function () {
     return response()->json([

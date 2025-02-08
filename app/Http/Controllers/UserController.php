@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -26,9 +28,9 @@ class UserController extends Controller
         }
     }
 
-    public function popProfile (Request $req, user $user, string $userID) {
+    public function popProfile(Request $req, user $user, string $userID)
+    {
         try {
-
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "Laravel pop profile function error",
@@ -37,9 +39,9 @@ class UserController extends Controller
         }
     }
 
-    public function followersAccount (Request $req, user $user, string $userID) {
+    public function followersAccount(Request $req, user $user, string $userID)
+    {
         try {
-
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "Laravel pop profile function error",
@@ -53,7 +55,48 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+
+            $request->validate([
+                'userID' => 'required|integer',
+                'name' => 'required|string',
+                'email' => 'required|string',
+                'userName' => 'required|string',
+                'password' => 'required|string', //Hash::make($request->password)
+                'statusID' => 'required|integer',
+            ]);
+
+            $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+            $user = User::findOrFail($request->userID);
+
+            if ($user) {
+
+                $user->update([
+                    'name' => $request->userID,
+                    'email' => $request->email,
+                    'username' => $request->userName,
+                    'password' => Hash::make($request->password),
+                    'status_id' => $request->statusID,
+                    'updated_at' => $dateTime,
+                ]);
+
+                return response()->json([
+                    'message' => "update user success.",
+                    'user' => $user
+                ], 200);
+
+            } else {
+                return response()->json([
+                    'message' => "update user false success.",
+                    'request' => $request->all()
+                ], 204);
+            }
+        } catch (\Exception $error) {
+            return response()->json([
+                'VueLaravelAPI' => "apiUpdateUser -> user controller function store",
+                'message_error' => "function error" . $error->getMessage(),
+            ], 500);
+        }
     }
 
     /**
