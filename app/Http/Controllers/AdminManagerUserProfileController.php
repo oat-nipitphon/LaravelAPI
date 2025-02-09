@@ -16,60 +16,73 @@ class AdminManagerUserProfileController extends Controller
     {
         try {
 
-            $user = User::with(
-                'userProfileContact',
-                'userProfileImage',
-                'userLogin',
+            $userProfiles = User::with(
                 'statusUser',
-                'posts',
-                'userFollowersProfile',
-                'userFollowersAccount'
-            )->get();
+                'latestUserLogin',
+                'userProfiles',
+                'userProfileImage',
+                'userProfileContact'
+            )->get()->map(function ($user) {
+                return $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'username' => $user->username,
+                    'status_id' => $user->status_id,
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
+                    'userLogin' => $user->latestUserLogin ? [
+                        'id' => $user->latestUserLogin->id,
+                        'user_id' => $user->latestUserLogin->user_id,
+                        'status_login' => $user->latestUserLogin->status_login,
+                        'created_at' => $user->latestUserLogin->created_at,
+                        'updated_at' => $user->latestUserLogin->updated_at,
+                        'total_time_login' => $user->latestUserLogin->total_time_login,
+                    ] : null,
+                    'userProfile' => $user->userProfiles->map(function ($profile) {
+                        return $profile ? [
+                            'id' => $profile->id,
+                            'user_id' => $profile->user_id,
+                            'title_name' => $profile->title_name,
+                            'full_name' => $profile->full_name,
+                            'nick_name' => $profile->nick_name,
+                            'tel_phone' => $profile->tel_phone,
+                            'birth_day' => $profile->birth_day,
+                            'created_at' => $profile->created_at,
+                            'updated_at' => $profile->updated_at,
+                        ] : null;
+                    }),
+                    'userProfileImage' => $user->userProfileImage->map(function ($image) {
+                        return $image ? [
+                            'id' => $image->id,
+                            'user_id' => $image->user_id,
+                            'image_name' => $image->image_name,
+                            'image_path' => $image->image_path,
+                            'image_url' => $image->image_url,
+                            'image_data' => 'data:image/png;base64,' . base64_encode($image->image_data),
+                            'created_at' => $image->created_at,
+                            'updated_at' => $image->updated_at,
+                        ] : null;
+                    }),
+                    'userContact' => $user->userProfileContact->map(function ($contact) {
+                        return $contact ? [
+                            'id' => $contact->id,
+                            'user_id' => $contact->user_id,
+                            'contact_name' => $contact->contact_name,
+                            'contact_link_address' => $contact->contact_link_address,
+                            'contact_link_path' => $contact->contact_link_path,
+                            'contact_icon_name' => $contact->contact_icon_name,
+                            'contact_icon_url' => $contact->contact_icon_url,
+                            'contact_icon_data' => 'data:image/png;base64,' . base64_encode($contact->contact_icon_data),
+                            'created_at' => $contact->created_at,
+                            'updated_at' => $contact->updated_at,
+                        ] : null;
+                    }),
 
-            dd($user);
-            $userProfiles = [
-                'id' => $user->id ?? null,
-                'email' => $user->email ?? null,
-                'name' => $user->name ?? null,
-                'username' => $user->username ?? null,
-                'statusUser' => $user->statusUser ?[
-                    'id' => $user->statusUser->id ?? null,
-                    'status_name' => $user->statusUser->status_name ?? null,
-                ] : null,
-                'userProfile' => $user->userProfile ? [
-                    'id' => $user->userProfile->id ?? null,
-                    'title_name' => $user->userProfile->title_name ?? null,
-                    'full_name' => $user->userProfile->full_name ?? null,
-                    'nick_name' => $user->userProfile->nick_name ?? null,
-                    'tel_phone' => $user->userProfile->tel_phone ?? null,
-                    'birth_day' => $user->userProfile->birth_day ?? null,
-                ] : null,
-                'userProfileContact' => $user->userProfileContact?->map(function ($contact) {
-                    return [
-                        'id' => $contact->id ?? null,
-                        'contact_name' => $contact->contact_name ?? null,
-                        'contact_link_path' => $contact->contact_link_path ?? null,
-                        'contact_icon_name' => $contact->contact_icon_name ?? null,
-                        'contact_icon_url' => $contact->contact_icon_url ?? null,
-                        'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
-                        . base64_encode($contact->contact_icon_data) : null ?? null,
-                    ];
-                }) ?? null,
-                'userProfileImage' => $user->userProfile->userProfileImage?->map(function ($profileImage) {
-                    return [
-                        'id' => $profileImage->id ?? null,
-                        'imagePath' => $profileImage->image_path ?? null,
-                        'imageName' => $profileImage->image_name ?? null,
-                        'imageData' => $profileImage->image_data ?? null,
-                    ];
-                }) ?? null,
-                'userLogin' => $user->userLogin ? [
-                    'id' => $user->userLogin->id ?? null,
-                    'statusLogin' => $user->userLogin->status_login ?? null,
-                    'createdAt' => $user->userLogin->created_at ?? null,
-                    'updatedAt' => $user->userLogin->updated_at ?? null,
-                ] : null,
-            ];
+                ] : null;
+            });
+
+            // dd($userProfiles);
 
             if ($userProfiles) {
                 return response()->json([

@@ -120,5 +120,4 @@ Route::prefix('/admin')->group(function () {
                 'destroy'
             ]);
     });
-});
-// ->middleware('auth:sanctum');
+})->middleware('auth:sanctum');

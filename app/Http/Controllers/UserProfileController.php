@@ -35,7 +35,6 @@ class UserProfileController extends Controller
                 'message' => "Laravel api user profile success.",
                 'user_profile' => $userProfiles
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel profile controller error",
@@ -95,7 +94,6 @@ class UserProfileController extends Controller
                 'message' => "update user profile false",
                 'status' => false
             ], 400);
-
         } catch (\Exception $error) {
             return response()->json([
                 'VueLaravelAPI' => "store apiUpdateDetailUserProfile -> controller function store",
@@ -110,8 +108,8 @@ class UserProfileController extends Controller
         try {
 
             $request->validate([
-                'profileID' => 'required|integer',
-                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:10000',  // 10MB max
+                'userID' => 'required|integer',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',  // 10MB max
             ]);
 
             if ($request->hasFile('imageFile')) {
@@ -130,27 +128,32 @@ class UserProfileController extends Controller
                 // $imageResize->resize(100, 100, function ($constraint) {
                 //     $constraint->aspectRatio();
                 // })->save($imagePath. '/' .$imageNameNew);
+            }
 
-                $userProfile = UserProfile::findOrFail($request->profileID);
+            // Optionally, if you need to filter or retrieve a specific result, you can do that separately
+            // $profileImage = $user->userProfileImage()->where('user_id', $request->userID)->first();
 
-                UserProfileImage::updateOrCreate(
-                    ['profile_id' => $userProfile->id],
-                    [
-                        'image_name' => $imageNameNew,
-                        'image_data' => $imageDataBase64,
-                    ]
-                );
-
-                return response()->json([
-                    'message' => "Laravel upload image profile successfully.",
+            $user = User::findOrFail($request->userID);
+            if ($user) {
+                $userProfileImage = UserProfileImage::where('user_id', $user->id)->first();
+                $userProfileImage->update([
+                    'user_id' => $user->id,
+                    'image_name' => $imageNameNew,
                     'image_data' => $imageDataBase64,
-                ], 201);
+                ]);
+
+                if ($userProfileImage) {
+                    return response()->json([
+                        'message' => "Laravel upload image successfully.",
+                        'userProfileImage' => $userProfileImage,
+                    ], 201);
+                }
             }
 
 
             return response()->json([
-                'message' => "No image file provided.",
-            ], 400);
+                'message' => "upload image false",
+            ], 204);
         } catch (\Exception $e) {
 
             Log::error('Image upload error: ' . $e->getMessage());
@@ -180,42 +183,44 @@ class UserProfileController extends Controller
             )->findOrFail($id);
 
             $userProfiles = [
-                'id' => $userProfiles->id ?? null,
-                'email' => $userProfiles->email ?? null,
-                'name' => $userProfiles->name ?? null,
-                'username' => $userProfiles->username ?? null,
+                'id' => $userProfiles->id,
+                'email' => $userProfiles->email,
+                'name' => $userProfiles->name,
+                'username' => $userProfiles->username,
+
                 'statusUser' => $userProfiles->statusUser ? [
-                    'id' => $userProfiles->statusUser->id ?? null,
-                    'status_name' => $userProfiles->statusUser->status_name ?? null,
+                    'id' => $userProfiles->statusUser->id,
+                    'status_name' => $userProfiles->statusUser->status_name,
                 ] : null,
+
                 'userProfile' => $userProfiles->userProfile ? [
-                    'id' => $userProfiles->userProfile->id ?? null,
-                    'title_name' => $userProfiles->userProfile->title_name ?? null,
-                    'full_name' => $userProfiles->userProfile->full_name ?? null,
-                    'nick_name' => $userProfiles->userProfile->nick_name ?? null,
-                    'tel_phone' => $userProfiles->userProfile->tel_phone ?? null,
-                    'birth_day' => $userProfiles->userProfile->birth_day ?? null,
+                    'id' => $userProfiles->userProfile->id,
+                    'title_name' => $userProfiles->userProfile->title_name,
+                    'full_name' => $userProfiles->userProfile->full_name,
+                    'nick_name' => $userProfiles->userProfile->nick_name,
+                    'tel_phone' => $userProfiles->userProfile->tel_phone,
+                    'birth_day' => $userProfiles->userProfile->birth_day,
                 ] : null,
-                'userProfileContact' => $userProfiles->userProfileContact?->map(function ($contact) {
+
+                'userProfileContact' => $userProfiles->userProfileContact->map(function ($contact) {
                     return [
-                        'id' => $contact->id ?? null,
-                        'contact_name' => $contact->contact_name ?? null,
-                        'contact_link_path' => $contact->contact_link_path ?? null,
-                        'contact_icon_name' => $contact->contact_icon_name ?? null,
-                        'contact_icon_url' => $contact->contact_icon_url ?? null,
+                        'id' => $contact->id,
+                        'contact_name' => $contact->contact_name,
+                        'contact_link_path' => $contact->contact_link_path,
+                        'contact_icon_name' => $contact->contact_icon_name,
+                        'contact_icon_url' => $contact->contact_icon_url,
                         'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
-                            . base64_encode($contact->contact_icon_data) : null ?? null,
+                            . base64_encode($contact->contact_icon_data) : null,
                     ];
-                }) ?? null,
-                'userProfileImage' => $userProfiles->userProfileImage?->map(function ($profileImage) {
+                }),
+                'userProfileImage' => $userProfiles->userProfileImage->map(function ($profileImage) {
                     return [
-                        'id' => $profileImage->id ?? null,
-                        'imagePath' => $profileImage->image_path ?? null,
-                        'imageName' => $profileImage->image_name ?? null,
-                        'imageData' => 'data:image/png;base64,' . base64_encode($profileImage->image_data) ??
-                        "https://scontent.fkkc3-1.fna.fbcdn.net/v/t39.30808-6/461897536_3707658799483986_794048670785055411_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=cc71e4&_nc_eui2=AeHVG0UH5FgwbVkdtl70b39it0I862Qbciu3QjzrZBtyK4PmJExwkjQwGNMpc0Sbm9HeXRE2Yi7Fvc_GrvrUrXJN&_nc_ohc=_8IVpzSUJz8Q7kNvgHrEAqC&_nc_oc=AdiyR3fiYNa1nU66Bls4Nb4I6H4rfNRXnPjAHaIZmi5Ok1Ea6cf98AHoc2eD3yBPfT0whk9DJecG4asGH43dv1dt&_nc_zt=23&_nc_ht=scontent.fkkc3-1.fna&_nc_gid=AkN_W4uZTFprgLGSWFrENZx&oh=00_AYCw9q71675W9Lkdf2lM4FSnNCyzhNZ1vmvURll1eRMLQw&oe=67AD49B1",
+                        'id' => $profileImage->id,
+                        'imagePath' => $profileImage->image_path,
+                        'imageName' => $profileImage->image_name,
+                        'imageData' => 'data:image/png;base64,' . base64_encode($profileImage->image_data),
                     ];
-                }) ?? null,
+                }),
             ];
 
             if ($userProfiles) {
@@ -229,7 +234,6 @@ class UserProfileController extends Controller
                 'message' => "laravel get user profile not success.",
                 'userProfiles' => $userProfiles
             ], 204);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "laravel user profile function show error",

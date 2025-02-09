@@ -80,8 +80,14 @@ class User extends Authenticatable
         return $this->belongsTo(StatusUser::class, 'status_id', 'id');
     }
 
+    // UserProfileController Show Card user profile
     public function userProfile () : HasOne {
         return $this->HasOne(UserProfile::class);
+    }
+
+    // AdminUserProfileController Report Table user profiles
+    public function userProfiles () : HasMany {
+        return $this->HasMany(UserProfile::class);
     }
 
     public function userProfileImage () : HasMany {

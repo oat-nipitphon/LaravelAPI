@@ -185,7 +185,7 @@ class AuthController extends Controller
         try {
             $user = $request->user();
             $userLogout = UserLogin::where('user_id', $user->id)->first();
-            if (!empty($userLogout)) {
+            if ($userLogout) {
                 $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
                 $userLogout->update([
