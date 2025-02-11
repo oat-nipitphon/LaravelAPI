@@ -154,14 +154,11 @@ class AuthController extends Controller
                 ]);
 
                 if ($userLogin) {
-
                     return response()->json([
                         'status' => 200,
                         'message' => "Login successfullry.",
                         'token' => $token,
                         'user' => $user,
-                        'user_login' => $userLogin,
-
                     ], 200);
                 }
             }
@@ -171,6 +168,7 @@ class AuthController extends Controller
                 'status' => false,
                 'user_login' => $userLogin,
             ], 400);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error during login.',
@@ -224,7 +222,8 @@ class AuthController extends Controller
             $user_login = User::with([
                 'userProfile',
                 'userProfileImage',
-                'userProfileContact'
+                'userProfileContact',
+                'latestUserLogin'
             ])->findOrFail($user_req->id);
             $token = $user_login->createToken($user_login->username)->plainTextToken;
 
@@ -236,6 +235,14 @@ class AuthController extends Controller
                 'status_id' => $user_login->status_id,
                 'created_at' => $user_login->created_at,
                 'updated_at' => $user_login->updated_at,
+                'userLogin' => $user_login->latestUserLogin ? [
+                    'id' => $user_login?->latestUserLogin->id,
+                    'user_id' => $user_login?->latestUserLogin->user_id,
+                    'status_login' => $user_login?->latestUserLogin->status_login,
+                    'created_at' => $user_login?->latestUserLogin->created_at,
+                    'updated_at' => $user_login?->latestUserLogin->updated_at,
+                    'total_time_login' => $user_login?->latestUserLogin->total_time_login,
+                ] : null,
                 'userProfile' => $user_login->userProfile ? [
                     'id' => $user_login->userProfile->id,
                     'user_id' => $user_login->userProfile->user_id,

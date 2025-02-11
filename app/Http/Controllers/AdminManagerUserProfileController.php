@@ -38,7 +38,14 @@ class AdminManagerUserProfileController extends Controller
                         'created_at' => $user->latestUserLogin->created_at,
                         'updated_at' => $user->latestUserLogin->updated_at,
                         'total_time_login' => $user->latestUserLogin->total_time_login,
-                    ] : null,
+                    ] : [
+                        'id' => "null",
+                        'user_id' => "null", 
+                        'status_login' => "null", 
+                        'created_at' => "null",
+                        'updated_at' => "null",
+                        'total_time_login' => "null", 
+                    ],
                     'userProfile' => $user->userProfiles->map(function ($profile) {
                         return $profile ? [
                             'id' => $profile->id,
