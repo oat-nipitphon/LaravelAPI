@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminManagerUserProfile;
-use App\Models\UserProfile;
 use App\Models\User;
+use App\Models\UserProfile;
+use App\Models\UserProfileImage;
 use Illuminate\Http\Request;
 
 class AdminManagerUserProfileController extends Controller
@@ -40,11 +41,11 @@ class AdminManagerUserProfileController extends Controller
                         'total_time_login' => $user->latestUserLogin->total_time_login,
                     ] : [
                         'id' => "null",
-                        'user_id' => "null", 
-                        'status_login' => "null", 
+                        'user_id' => "null",
+                        'status_login' => "null",
                         'created_at' => "null",
                         'updated_at' => "null",
-                        'total_time_login' => "null", 
+                        'total_time_login' => "null",
                     ],
                     'userProfile' => $user->userProfiles->map(function ($profile) {
                         return $profile ? [
@@ -122,9 +123,25 @@ class AdminManagerUserProfileController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(AdminManagerUserProfile $adminManagerUserProfile)
+    public function show(AdminManagerUserProfile $adminManagerUserProfile, string $userProfileID)
     {
-        //
+        try {
+
+            $userProfile = UserProfile::findOrFail($userProfileID);
+
+            if ($userProfile) {
+                return response()->json([
+                    'message' => "laravel function show get userprofile success.",
+                    'userProfile' => $userProfile,
+                    'status' => 200,
+                ], 200);
+            }
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "laravel controller function show error" . $error->getMessage()
+            ]);
+        }
     }
 
     /**
