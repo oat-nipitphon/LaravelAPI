@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\UserProfileImage;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Support\Facedes\Validator;
+use Intervention\Image\Facedes\Image;
 
 
 class UserProfileController extends Controller
 {
+
     /**
      * Display a listing of the resource.
      */
@@ -103,67 +105,6 @@ class UserProfileController extends Controller
         }
     }
 
-    public function uploadImageProfile(Request $request)
-    {
-        try {
-
-            $request->validate([
-                'userID' => 'required|integer',
-                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',  // 10MB max
-            ]);
-
-            if ($request->hasFile('imageFile')) {
-
-                $imageFile = $request->file('imageFile');
-                // $imagePath = $imageFile->store('profile_images', 'public');
-                $imageName = $imageFile->getClientOriginalName();
-                $imageNameNew = time() . " - " . $imageName;
-
-                // File image blob binary
-                $imageData = file_get_contents($imageFile->getRealPath());
-                $imageDataBase64 = base64_encode($imageData);
-
-                // File image resize
-                // $imageResize = Image::read($imageFile->path());
-                // $imageResize->resize(100, 100, function ($constraint) {
-                //     $constraint->aspectRatio();
-                // })->save($imagePath. '/' .$imageNameNew);
-            }
-
-            // Optionally, if you need to filter or retrieve a specific result, you can do that separately
-            // $profileImage = $user->userProfileImage()->where('user_id', $request->userID)->first();
-
-            $user = User::findOrFail($request->userID);
-            if ($user) {
-                $userProfileImage = UserProfileImage::where('user_id', $user->id)->first();
-                $userProfileImage->update([
-                    'user_id' => $user->id,
-                    'image_name' => $imageNameNew,
-                    'image_data' => $imageDataBase64,
-                ]);
-
-                if ($userProfileImage) {
-                    return response()->json([
-                        'message' => "Laravel upload image successfully.",
-                        'userProfileImage' => $userProfileImage,
-                    ], 201);
-                }
-            }
-
-
-            return response()->json([
-                'message' => "upload image false",
-            ], 204);
-        } catch (\Exception $e) {
-
-            Log::error('Image upload error: ' . $e->getMessage());
-
-            return response()->json([
-                'message' => "An error occurred during image upload.",
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
 
     /**
      * Display the specified resource.
@@ -172,7 +113,8 @@ class UserProfileController extends Controller
     {
         try {
 
-            $userProfiles = User::with(
+            $userProfile = User::with(
+                'userProfile',
                 'userProfileContact',
                 'userProfileImage',
                 'userLogin',
@@ -183,27 +125,36 @@ class UserProfileController extends Controller
             )->findOrFail($id);
 
             $userProfiles = [
-                'id' => $userProfiles->id,
-                'email' => $userProfiles->email,
-                'name' => $userProfiles->name,
-                'username' => $userProfiles->username,
+                'id' => $userProfile->id,
+                'email' => $userProfile->email,
+                'name' => $userProfile->name,
+                'username' => $userProfile->username,
 
-                'statusUser' => $userProfiles->statusUser ? [
-                    'id' => $userProfiles->statusUser->id,
-                    'status_name' => $userProfiles->statusUser->status_name,
+                'statusUser' => $userProfile->statusUser ? [
+                    'id' => $userProfile->statusUser->id,
+                    'status_name' => $userProfile->statusUser->status_name,
                 ] : null,
 
-                'userProfile' => $userProfiles->userProfile ? [
-                    'id' => $userProfiles->userProfile->id,
-                    'title_name' => $userProfiles->userProfile->title_name,
-                    'full_name' => $userProfiles->userProfile->full_name,
-                    'nick_name' => $userProfiles->userProfile->nick_name,
-                    'tel_phone' => $userProfiles->userProfile->tel_phone,
-                    'birth_day' => $userProfiles->userProfile->birth_day,
+                'userProfile' => $userProfile->userProfile ? [
+                    'id' => $userProfile->userProfile->id,
+                    'title_name' => $userProfile->userProfile->title_name,
+                    'full_name' => $userProfile->userProfile->full_name,
+                    'nick_name' => $userProfile->userProfile->nick_name,
+                    'tel_phone' => $userProfile->userProfile->tel_phone,
+                    'birth_day' => $userProfile->userProfile->birth_day,
                 ] : null,
 
-                'userProfileContact' => $userProfiles->userProfileContact->map(function ($contact) {
-                    return [
+                'userProfileImage' => $userProfile->userProfileImage->map(function ($image) {
+                    return $image ? [
+                        'id' => $image->id,
+                        'image_path' => $image->image_path,
+                        'image_name' => $image->image_name,
+                        'image_data' => $image->image_data ? 'data:image/png;base64,' . base64_encode($image->image_data) : null,
+                    ] : null;
+                }),
+
+                'userProfileContact' => $userProfile->userProfileContact->map(function ($contact) {
+                    return $contact ? [
                         'id' => $contact->id,
                         'contact_name' => $contact->contact_name,
                         'contact_link_path' => $contact->contact_link_path,
@@ -211,16 +162,9 @@ class UserProfileController extends Controller
                         'contact_icon_url' => $contact->contact_icon_url,
                         'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
                             . base64_encode($contact->contact_icon_data) : null,
-                    ];
+                    ] : null;
                 }),
-                'userProfileImage' => $userProfiles->userProfileImage->map(function ($profileImage) {
-                    return [
-                        'id' => $profileImage->id,
-                        'imagePath' => $profileImage->image_path,
-                        'imageName' => $profileImage->image_name,
-                        'imageData' => 'data:image/png;base64,' . base64_encode($profileImage->image_data),
-                    ];
-                }),
+
             ];
 
             if ($userProfiles) {

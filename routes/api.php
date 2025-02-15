@@ -22,6 +22,8 @@ use App\Http\Controllers\AdminManagerPostController;
 use App\Http\Controllers\AdminManagerUserProfileController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserProfileImageController;
+use App\Models\UserProfileImage;
 
 // User
 Route::middleware(['auth:sanctum'])->get('/user', [AuthController::class, 'index']);
@@ -45,7 +47,7 @@ Route::apiResource('/users', App\Http\Controllers\UserController::class)->middle
 
 // User Profiles
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
-Route::post('/user_profile/upload_image', [UserProfileController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
+Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 
 
 // Post type
@@ -61,6 +63,29 @@ Route::get('/postTypes', function () {
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
 Route::post('/posts/store/{postID}', [PostController::class, 'postStore']);
 Route::post('/posts/update', [PostController::class, 'update'])->middleware('auth:sanctum');
+
+// Editor TipTap
+Route::post('/EditorTipTap/NewPost', function (Request $req) {
+    $req->validate([
+        'userID' => 'required|integer',
+        'title' => 'required|string',
+        'content' => 'required|string',
+        'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+    if (!empty($req->content)) {
+        if ($req->hasFile('imageFile')) {
+            $imageFile = $req->file('imageImage');
+            $imageName = $imageFile->getClientOriginalName();
+            dd([
+                'content' => $req->title . $req->content,
+                'imageFile' => $req->file('imageFile'),
+                'imageName' => $imageName
+            ]);
+        }
+    } else {
+        dd($req);
+    }
+});
 
 Route::get('/get_posts', function () {
     try {
