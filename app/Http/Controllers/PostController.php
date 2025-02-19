@@ -48,7 +48,7 @@ class PostController extends Controller
 
                         'postType' => $post->postType ? [
                             'id' => $post->postType->id,
-                            'name' => $post->postType->type_name,
+                            'name' => $post->postType->post_type_name,
                         ] : null,
 
                         'postPopularity' => $post->postPopularity->map(function ($postPop) {
@@ -148,17 +148,27 @@ class PostController extends Controller
                 'title' => 'required|string',
                 'content' => 'required|string',
                 'refer' => 'required|string',
-                'typeID' => 'required|integer',
+                'typeID' => 'required|string',
+                'newType' => 'required|string',
                 'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
+            if ($validated['newType'] != "") {
+                $postType = PostType::create([
+                    'post_type_name' => $validated['newType'],
+                ]);
+                $postIDConfirm = $postType->id;
+            } else {
+                $postIDConfirm = $validated['typeID'];
+            }
+
             $post = Post::create([
                 'post_title' => $validated['title'],
                 'post_content' => $validated['content'],
                 'refer' => $validated['refer'],
-                'type_id' => $validated['typeID'],
+                'type_id' => $postIDConfirm,
                 'user_id' => $validated['userID'],
                 'deletetion_status' => "false", // status 0 == false // status 1 == true
                 'block_status' => "false",
@@ -281,24 +291,38 @@ class PostController extends Controller
                 'title' => 'required|string',
                 'content' => 'required|string',
                 'refer' => 'required|string',
-                'typeID' => 'required|integer',
+                'typeID' => 'required|string',
+                'newType' => 'required|string',
                 'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
-            $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
-
             $post = Post::findOrFail($request->postID);
 
-
-
             if ($post) {
+
+                $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+
+                if ($validated['newType'] != "") {
+                    $postType = PostType::create([
+                        'post_type_name' => $validated['newType'],
+                    ]);
+                    $postTypeIDConfirm = $postType->id;
+                } else {
+                    $postTypeIDConfirm = $validated['typeID'];
+                }
+
+                if (!$postTypeIDConfirm) {
+                    return response()->json([
+                        'message' => "type id false ". $postTypeIDConfirm,
+                    ]);
+                }
 
                 $post->update([
                     'post_title' => $validated['title'],
                     'post_content' => $validated['content'],
                     'refer' => $validated['refer'],
                     'user_id' => $validated['userID'],
-                    'type_id' => $validated['typeID'],
+                    'type_id' => $postTypeIDConfirm,
                     'updated_at' => $dateTimeNow,
                 ]);
 
@@ -315,21 +339,27 @@ class PostController extends Controller
                         'image_data' => $imageDataBase64,
                         'updated_at' => $dateTimeNow
                     ]);
-                }
-            }
 
-            if ($post) {
+                }
                 return response()->json([
                     'message' => "Laravel function update post success.",
                     'post' => $post,
                     'status' => 200
-                ], 200);
+                ], 201);
+
             }
 
-            return response()->json([
-                'message' => "Laravel function update response false",
-                'postID' => $request->postID
-            ], 204);
+            if (!$post) {
+                return response()->json([
+                    'message' => "Laravel function update response false",
+                    'postID' => $request->postID
+                ], 204);
+            }
+
+            dd([
+                'req' => $request->all(),
+                'post' => "post false" . $post,
+            ]);
 
         } catch (\Exception $error) {
 

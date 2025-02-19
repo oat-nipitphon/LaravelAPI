@@ -124,15 +124,13 @@ class AdminManagerUserProfileController extends Controller
     {
         try {
 
-            $userProfile = UserProfile::findOrFail($userProfileID);
+            $userProfile = UserProfile::with(
+                'user',
+                'user.userProfileImage'
+            )->findOrFail($userProfileID);
 
-            if ($userProfile) {
-                return response()->json([
-                    'message' => "laravel function show get userprofile success.",
-                    'userProfile' => $userProfile,
-                    'status' => 200,
-                ], 200);
-            }
+            dd($userProfile);
+
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "laravel controller function show error" . $error->getMessage()

@@ -13,7 +13,7 @@ class PostType extends Model
      * @var string
      */
     protected $table = 'post_types';
-    protected $fillabel = [
+    protected $fillable = [
         'id',
         'post_type_name',
         'type_image_path',

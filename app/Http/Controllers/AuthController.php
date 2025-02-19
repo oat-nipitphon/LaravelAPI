@@ -164,6 +164,7 @@ class AuthController extends Controller
             }
 
             return response()->json([
+                'status' => 400,
                 'message' => "Login not success.",
                 'status' => false,
                 'user_login' => $userLogin,
