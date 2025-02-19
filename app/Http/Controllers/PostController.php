@@ -34,7 +34,7 @@ class PostController extends Controller
             ])
                 ->where('deletetion_status', 'false')
                 ->where('block_status', 'false')
-                ->orderBy('created_at', 'desc')
+                ->orderBy('updated_at', 'desc')
                 ->get()
                 ->map(function ($post) {
                     return $post ? [
@@ -199,7 +199,6 @@ class PostController extends Controller
                 'post' => $post,
                 'status' => 201
             ], 201);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function store error", [
@@ -262,7 +261,6 @@ class PostController extends Controller
                 'message' => "Laravel function show response false !!",
                 'posts' => $posts
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function show error", [
@@ -274,7 +272,6 @@ class PostController extends Controller
                 'message' => "Laravel function show error",
                 'error' => $error->getMessage()
             ], 500);
-
         }
     }
 
@@ -293,7 +290,7 @@ class PostController extends Controller
                 'refer' => 'required|string',
                 'typeID' => 'required|string',
                 'newType' => 'required|string',
-                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:10800',
             ]);
 
             $post = Post::findOrFail($request->postID);
@@ -302,7 +299,7 @@ class PostController extends Controller
 
                 $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
-                if ($validated['newType'] != "") {
+                if ($request->typeID == "newType") {
                     $postType = PostType::create([
                         'post_type_name' => $validated['newType'],
                     ]);
@@ -313,7 +310,7 @@ class PostController extends Controller
 
                 if (!$postTypeIDConfirm) {
                     return response()->json([
-                        'message' => "type id false ". $postTypeIDConfirm,
+                        'message' => "type id false " . $postTypeIDConfirm,
                     ]);
                 }
 
@@ -321,7 +318,6 @@ class PostController extends Controller
                     'post_title' => $validated['title'],
                     'post_content' => $validated['content'],
                     'refer' => $validated['refer'],
-                    'user_id' => $validated['userID'],
                     'type_id' => $postTypeIDConfirm,
                     'updated_at' => $dateTimeNow,
                 ]);
@@ -335,32 +331,21 @@ class PostController extends Controller
                     $postImage = PostImage::where('post_id', $request->postID)->first();
 
                     $postImage->update([
-                        'post_id' => $post->id,
                         'image_data' => $imageDataBase64,
                         'updated_at' => $dateTimeNow
                     ]);
-
                 }
                 return response()->json([
                     'message' => "Laravel function update post success.",
-                    'post' => $post,
                     'status' => 200
-                ], 201);
-
+                ], 200);
             }
 
             if (!$post) {
                 return response()->json([
                     'message' => "Laravel function update response false",
-                    'postID' => $request->postID
                 ], 204);
             }
-
-            dd([
-                'req' => $request->all(),
-                'post' => "post false" . $post,
-            ]);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function update error", [
@@ -396,7 +381,6 @@ class PostController extends Controller
             return response()->json([
                 'message' => "Laravel API delete success",
             ], 200);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function destroy error", [
@@ -411,7 +395,8 @@ class PostController extends Controller
         }
     }
 
-    public function postStore (string $postID) {
+    public function postStore(string $postID)
+    {
         try {
 
             if ($postID) {
@@ -439,15 +424,12 @@ class PostController extends Controller
                             'message' => "Post function destroy successfully.",
                             'postDeletetion' => $postDeletetion
                         ], 200);
-
                     } else {
                         dd($postDeletetion);
                     }
-
                 } else {
                     dd($post);
                 }
-
             } else {
                 dd($postID);
             }
@@ -457,7 +439,6 @@ class PostController extends Controller
                 'id' => $postID,
                 'post' => $post
             ], 204);
-
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "Laravel function postStore error " . $error->getMessage()
