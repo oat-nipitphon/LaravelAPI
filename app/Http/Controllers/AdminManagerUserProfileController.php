@@ -90,8 +90,6 @@ class AdminManagerUserProfileController extends Controller
                 ] : null;
             });
 
-            dd($userProfiles);
-
             if ($userProfiles) {
                 return response()->json([
                     'message' => "Laravel get user profile detail success",
@@ -103,6 +101,7 @@ class AdminManagerUserProfileController extends Controller
                 'message' => "Laravel admin manager user profile false.",
                 'userProfiles' => $userProfiles
             ], 204);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel admin manager user profile error.",

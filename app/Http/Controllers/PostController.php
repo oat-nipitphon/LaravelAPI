@@ -144,7 +144,8 @@ class PostController extends Controller
     }
 
 
-    private function dateTimeFormatTimeZone () {
+    private function dateTimeFormatTimeZone()
+    {
         return Carbon::now('Asia/bangkok')->format('Y-m-d H:i:s');
     }
 
@@ -206,13 +207,11 @@ class PostController extends Controller
                         'imageDataBase64' => $imageDataBase64,
                     ], 201);
                 }
-
             }
 
             return response()->json([
                 'message' => "laravel api store response false"
             ], 204);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function store error", [
@@ -302,73 +301,68 @@ class PostController extends Controller
                 'title' => 'required|string',
                 'content' => 'required|string',
                 'refer' => 'required|string',
-                'typeID' => 'required|string',
+                'typeID' => 'required|integer',
                 'newType' => 'required|string',
-                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:10800',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
+
+            $type_id = $request->typeID;
+            if (!empty($request->newType)) {
+                $postType = PostType::create([
+                    'post_type_name' => $request->newType,
+                    'created_at' => $this->dateTimeFormatTimeZone()
+                ]);
+                $type_id = $postType->id;
+            }
 
             $post = Post::findOrFail($request->postID);
 
-            if ($post) {
-
-                $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
-
-                if ($request->typeID == "newType") {
-                    $postType = PostType::create([
-                        'post_type_name' => $validated['newType'],
-                    ]);
-                    $postTypeIDConfirm = $postType->id;
-                } else {
-                    $postTypeIDConfirm = $validated['typeID'];
-                }
-
-                if (!$postTypeIDConfirm) {
-                    return response()->json([
-                        'message' => "type id false " . $postTypeIDConfirm,
-                    ]);
-                }
+            if ($post && $type_id) {
 
                 $post->update([
                     'post_title' => $validated['title'],
                     'post_content' => $validated['content'],
                     'refer' => $validated['refer'],
-                    'type_id' => $postTypeIDConfirm,
-                    'updated_at' => $dateTimeNow,
+                    'type_id' => $type_id,
+                    'deletetion_status' => "false", // status 0 == false // status 1 == true
+                    'block_status' => "false",
+                    'updated_at' => $this->dateTimeFormatTimeZone(),
                 ]);
 
                 if ($request->hasFile('imageFile')) {
-
                     $imageFile = $request->file('imageFile');
                     $imageData = file_get_contents($imageFile->getRealPath());
                     $imageDataBase64 = base64_encode($imageData);
+                }
 
-                    $postImage = PostImage::where('post_id', $request->postID)->first();
-
+                $postImage = PostImage::where('post_id', $post->id)->first();
+                if ($postImage) {
                     $postImage->update([
+                        'post_id' => $post->id,
                         'image_data' => $imageDataBase64,
-                        'updated_at' => $dateTimeNow
+                        'updated_at' => $this->dateTimeFormatTimeZone(),
                     ]);
                 }
-                return response()->json([
-                    'message' => "Laravel function update post success.",
-                    'status' => 200
-                ], 200);
-            }
 
-            if (!$post) {
                 return response()->json([
-                    'message' => "Laravel function update response false",
+                    'message' => 'Laravel function store successfully.',
+                    'post' => $post,
+                    'imageDataBase64' => $imageDataBase64,
+                ], 201);
+            } else {
+                return response()->json([
+                    'message' => "laravel api store response false"
                 ], 204);
             }
         } catch (\Exception $error) {
 
-            Log::error("Laravel function update error", [
+            Log::error("Laravel function store error", [
                 'error' => $error->getMessage(),
                 'trace' => $error->getTraceAsString()
             ]);
 
             return response()->json([
-                'message' => "Laravel function update error",
+                'message' => "Laravel function store error",
                 'error' => $error->getMessage()
             ], 500);
         }
