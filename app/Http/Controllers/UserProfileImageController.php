@@ -17,6 +17,9 @@ use App\Models\UserProfileImage;
 class UserProfileImageController extends Controller
 {
 
+
+
+
     /**
      * Resize image before saving to database
      * @param UploadedFile $image
@@ -88,6 +91,83 @@ class UserProfileImageController extends Controller
             return response()->json([
                 'message' => "An error occurred during image upload." . $error->getMessage(),
             ], 500);
+        }
+    }
+
+    private function dateTimeNowFormatTimeZone()
+    {
+        $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+        return $dateTime;
+    }
+
+    public function uploadImageUserProfile(Request $request)
+    {
+        try {
+
+            $validated = $request->validate([
+                'userID' => 'required|integer',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2040'
+            ]);
+
+            $user = User::findOrFail($request->userID);
+
+            if ($user) {
+
+                if (!$request->hasFile('imageFile')) {
+                    return response()->json([
+                        'hasFile' => $request->file('imageFile'),
+                    ]);
+                }
+
+                $imageFile = $request->file('imageFile');
+                $imageData = file_get_contents($imageFile->getRealPath());
+                $imageDataBase64 = base64_encode($imageData);
+
+                if ($imageDataBase64) {
+
+                    $userProfileImage = UserProfileImage::where('user_id', $user->id)->first();
+
+                    if ($userProfileImage) {
+
+                        $checkUpdate = [
+                            'status' => 200,
+                            'message' => "update user profile image",
+                            'userProfileImage' =>  $userProfileImage->update([
+                                'image_data' => $imageDataBase64,
+                                'updated_at' => $this->dateTimeNowFormatTimeZone(),
+                            ]),
+                        ];
+                    } else {
+
+                        $checkUpdate = [
+                            'status' => 200,
+                            'message' => "update user profile image",
+                            'userProfileImage' =>  UserProfileImage::create([
+                                'user_id' => $user->id,
+                                'image_data' => $imageDataBase64,
+                                'created_at' => $this->dateTimeNowFormatTimeZone(),
+                            ]),
+                        ];
+                    }
+                }
+
+                if ($checkUpdate['status'] === 200) {
+                    return response()->json([
+                        'message' => "upload user profile image success",
+                        'imageData' => $imageDataBase64,
+                    ]);
+                }
+
+                return response()->json([
+                    'message' => "upload user profile image false",
+                    'imageData' => $imageDataBase64
+                ]);
+            }
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "laravel api upload image error",
+                'error' => $error->getMessage()
+            ]);
         }
     }
 

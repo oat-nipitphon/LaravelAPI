@@ -76,6 +76,14 @@ class User extends Authenticatable
     //     return $this->hasManyThrough(Deployment::class, Environment::class);
     // }
 
+    public function userImage () : HasMany {
+        return $this->HasMany(UserImage::class, 'user_id', 'id');
+    }
+
+    public function userProfileImage () : HasMany {
+        return $this->HasMany(UserProfileImage::class, 'user_id', 'id');
+    }
+
     public function statusUser () : BelongsTo {
         return $this->belongsTo(StatusUser::class, 'status_id', 'id');
     }
@@ -88,10 +96,6 @@ class User extends Authenticatable
     // AdminUserProfileController Report Table user profiles
     public function userProfiles () : HasMany {
         return $this->HasMany(UserProfile::class);
-    }
-
-    public function userProfileImage () : HasMany {
-        return $this->HasMany(UserProfileImage::class, 'user_id', 'id');
     }
 
     public function userLogin (): HasMany {

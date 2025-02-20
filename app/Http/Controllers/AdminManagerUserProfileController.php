@@ -67,7 +67,7 @@ class AdminManagerUserProfileController extends Controller
                             'image_name' => $image->image_name,
                             'image_path' => $image->image_path,
                             'image_url' => $image->image_url,
-                            'image_data' => 'data:image/png;base64,' . base64_encode($image->image_data),
+                            'image_data' => $image->image_data,
                             'created_at' => $image->created_at,
                             'updated_at' => $image->updated_at,
                         ] : null;
@@ -81,7 +81,7 @@ class AdminManagerUserProfileController extends Controller
                             'contact_link_path' => $contact->contact_link_path,
                             'contact_icon_name' => $contact->contact_icon_name,
                             'contact_icon_url' => $contact->contact_icon_url,
-                            'contact_icon_data' => 'data:image/png;base64,' . base64_encode($contact->contact_icon_data),
+                            'contact_icon_data' => $contact->contact_icon_data,
                             'created_at' => $contact->created_at,
                             'updated_at' => $contact->updated_at,
                         ] : null;
@@ -89,6 +89,8 @@ class AdminManagerUserProfileController extends Controller
 
                 ] : null;
             });
+
+            dd($userProfiles);
 
             if ($userProfiles) {
                 return response()->json([
@@ -129,7 +131,6 @@ class AdminManagerUserProfileController extends Controller
                 'user.userProfileImage'
             )->findOrFail($userProfileID);
 
-            dd($userProfile);
 
         } catch (\Exception $error) {
             return response()->json([

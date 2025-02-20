@@ -18,19 +18,27 @@ use App\Models\PostPopularity;
 use App\Models\PostDeletetion;
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserImageController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\UserProfileImageController;
 use App\Http\Controllers\AdminManagerPostController;
 use App\Http\Controllers\AdminManagerUserProfileController;
-use App\Http\Controllers\UserProfileController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\UserProfileImageController;
-use App\Models\UserProfileImage;
 
 // User
 Route::middleware(['auth:sanctum'])->get('/user', [AuthController::class, 'index']);
-
+// Route::get('/user', [AuthController::class, 'index']);
 Route::get('/status_user', function () {
+    $userStatus = StatusUser::all()
+    ->map(function ($type) {
+        return $type ? [
+            'id' => $type->id,
+            'name' => $type->status_name,
+        ] : null;
+    });
+
     return response()->json([
-        'userStatus' => StatusUser::all()
+        'userStatus' => $userStatus,
     ], 200);
 });
 
@@ -48,8 +56,15 @@ Route::apiResource('/users', App\Http\Controllers\UserController::class)->middle
 // User Profiles
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
 Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
+Route::post('/uploadImageUserProfile', [UserProfileImageController::class, 'uploadImageUserProfile'])->middleware('auth:sanctum');
+Route::post('/user/upload/image', [UserImageController::class, 'uploadUserImage'])->middleware('auth:sanctum');
 
 
+// Posts
+Route::apiResource('/posts', PostController::class);
+// ->middleware('auth:sanctum');
+Route::post('/posts/store/{postID}', [PostController::class, 'postStore']);
+Route::post('/posts/update', [PostController::class, 'update'])->middleware('auth:sanctum');
 // Post type
 Route::get('/postTypes', function () {
     $postTypes = App\Models\PostType::all();
@@ -57,12 +72,6 @@ Route::get('/postTypes', function () {
         'postTypes' => $postTypes,
     ], 200);
 });
-
-
-// Posts
-Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
-Route::post('/posts/store/{postID}', [PostController::class, 'postStore']);
-Route::post('/posts/update', [PostController::class, 'update'])->middleware('auth:sanctum');
 
 // Editor TipTap
 Route::post('/EditorTipTap/NewPost', function (Request $req) {
@@ -145,4 +154,5 @@ Route::prefix('/admin')->group(function () {
                 'destroy'
             ]);
     });
-})->middleware('auth:sanctum');
+});
+// ->middleware('auth:sanctum');

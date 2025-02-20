@@ -114,6 +114,7 @@ class UserProfileController extends Controller
         try {
 
             $userProfile = User::with(
+                'userImage',
                 'userProfile',
                 'userProfileContact',
                 'userProfileImage',
@@ -143,6 +144,13 @@ class UserProfileController extends Controller
                     'tel_phone' => $userProfile->userProfile->tel_phone,
                     'birth_day' => $userProfile->userProfile->birth_day,
                 ] : null,
+
+                'userImage' => $userProfile->userImage->map(function ($userImage) {
+                    return [
+                        'id' => $userImage->id,
+                        'imageData' => $userImage->image_data,
+                    ];
+                }),
 
                 'userProfileImage' => $userProfile->userProfileImage->map(function ($image) {
                     return $image ? [

@@ -40,25 +40,31 @@ class AuthController extends Controller
                 'created_at' => $dateTimeNow
             ]);
 
-            $userProfile = UserProfile::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'title_name' => "",
-                    'full_name' => "",
-                    'created_at' => $dateTimeNow,
-                ],
-            );
-
-            $user_login = UserLogin::create([
-                'user_id' => $user->id,
-                'status_login' => "online",
-                'created_at' => $dateTimeNow,
-            ]);
 
             $token = $user->createToken($user->username)->plainTextToken;
 
-            if ($user && $userProfile && $user_login && $token) {
+            if ($user && $token) {
 
+                $userProfile = UserProfile::create([
+                    'user_id' => $user->id,
+                    'created_at' => $dateTimeNow,
+                ]);
+
+                $user_login = UserLogin::create([
+                    'user_id' => $user->id,
+                    'status_login' => "online",
+                    'created_at' => $dateTimeNow,
+                ]);
+
+                if (!$user_login) {
+                    return response()->json([
+                        'message' => "register required false",
+                        'token' => false,
+                        'user' => false,
+                        'userProfile' => false,
+                        'user_login' => false,
+                    ], 204);
+                }
                 return response()->json([
                     'message' => "register success",
                     'token' => $token,
@@ -68,13 +74,7 @@ class AuthController extends Controller
                 ], 200);
             }
 
-            return response()->json([
-                'message' => "register required false",
-                'token' => false,
-                'user' => false,
-                'userProfile' => false,
-                'user_login' => false,
-            ], 204);
+
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "backend api function register error -> " . $error->getMessage()
@@ -144,31 +144,34 @@ class AuthController extends Controller
 
             $token = $user->createToken($user->username)->plainTextToken;
 
-            if ($user) {
+            if ($user && $token) {
 
-                $dateTimeNow = Carbon::now('Asia/Bangkok');
+                $dateTimeNow = Carbon::now('Asia/Bangkok')->format("Y-m-d H:i:s");
+
                 $userLogin = UserLogin::create([
                     'user_id' => $user->id,
                     'status_login' => "online",
                     'created_at' => $dateTimeNow,
                 ]);
 
-                if ($userLogin) {
+                if (!$userLogin) {
                     return response()->json([
-                        'status' => 200,
-                        'message' => "Login successfullry.",
-                        'token' => $token,
-                        'user' => $user,
-                    ], 200);
+                        'status' => 400,
+                        'message' => "Login not success.",
+                        'status' => false,
+                        'user_login' => $userLogin,
+                    ], 400);
                 }
+
+                return response()->json([
+                    'status' => 200,
+                    'message' => "Login successfullry.",
+                    'token' => $token,
+                    'user' => $user,
+                ], 200);
+
             }
 
-            return response()->json([
-                'status' => 400,
-                'message' => "Login not success.",
-                'status' => false,
-                'user_login' => $userLogin,
-            ], 400);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -182,28 +185,34 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            $user = $request->user();
-            $userLogout = UserLogin::where('user_id', $user->id)->first();
-            if ($userLogout) {
+
+
+            if ($user = $request->user()) {
+
                 $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
-                $userLogout->update([
+
+                $userLogout = UserLogin::create([
+                    'user_id' => $user->id,
                     'status_login' => "offline",
                     'updated_at' => $dateTimeNow
                 ]);
 
-                $user->tokens()->delete();
 
+                if (!$userLogout) {
+                    return response()->json([
+                        'status' => 204,
+                        'message' => "Laravel function logout request user false",
+                        'requestUser' => $request->user()
+                    ]);
+                }
+
+                $user->tokens()->delete();
                 return response()->json([
                     'status' => 200,
                     'message' => "Laravel function logout successfullry",
                 ], 200);
-            } else {
-                return response()->json([
-                    'status' => 204,
-                    'message' => "Laravel function logout request user false",
-                    'requestUser' => $request->user()
-                ]);
+
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -255,10 +264,10 @@ class AuthController extends Controller
                     'created_at' => $user_login->userProfile->created_at,
                     'updated_at' => $user_login->userProfile->updated_at,
                 ] : null,
-                'userProfileImage' => $user_login->userProfileImage->map(function ($image) {
-                    return $image ? [
-                        'id' => $image->id,
-                        'imageData' => $image->image_data ? 'data:image/png;base64,' . base64_encode($image->image_data) : null,
+                'userProfileImage' => $user_login->userProfileImage->map(function ($profileImage) {
+                    return $profileImage ? [
+                        'id' => $profileImage->id,
+                        'imageData' => $profileImage->image_data ? 'data:image/png;base64,' . base64_encode($profileImage->image_data) : null,
                     ] : null;
                 }),
                 'userProfileContact' => $user_login->userProfileContact ?
@@ -284,6 +293,7 @@ class AuthController extends Controller
                 'user_login' => $user_login,
                 'token' => $token
             ], 200);
+
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "Laravel auth controller function error " . $error->getMessage(),
