@@ -230,6 +230,7 @@ class AuthController extends Controller
         try {
             $user_req = $request->user();
             $user_login = User::with([
+                'userImage',
                 'userProfile',
                 'userProfileImage',
                 'userProfileContact',
@@ -264,6 +265,12 @@ class AuthController extends Controller
                     'created_at' => $user_login->userProfile->created_at,
                     'updated_at' => $user_login->userProfile->updated_at,
                 ] : null,
+                'userImage' => $user_login->userImage->map(function ($userImage) {
+                    return [
+                        'id' => $userImage->id,
+                        'imageData' => $userImage->image_data,
+                    ];
+                }),
                 'userProfileImage' => $user_login->userProfileImage->map(function ($profileImage) {
                     return $profileImage ? [
                         'id' => $profileImage->id,

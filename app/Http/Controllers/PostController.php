@@ -28,6 +28,7 @@ class PostController extends Controller
                 'postImage',
                 'postPopularity',
                 'user',
+                'user.userImage',
                 'user.userProfile',
                 'user.userProfileContact',
                 'user.userProfileImage',
@@ -47,7 +48,6 @@ class PostController extends Controller
                         'updatedAtt' => $post->updated_at,
 
                         'postType' => $post->postType ? [
-                            'id' => $post->postType->id,
                             'name' => $post->postType->post_type_name,
                         ] : null,
 
@@ -87,6 +87,13 @@ class PostController extends Controller
                             'createdAt' => $post->user->userProfile->created_at,
                             'updatedAt' => $post->user->userProfile->updated_at,
                         ] : null,
+
+                        'userImage' => $post->user->userImage->map(function ($userImage) {
+                            return [
+                                'id' => $userImage->id,
+                                'imageData' => $userImage->image_data,
+                            ];
+                        }),
 
                         'userProfileImage' => $post->user->userProfileImage->map(function ($profileImage) {
                             return $profileImage ? [
@@ -136,6 +143,11 @@ class PostController extends Controller
         }
     }
 
+
+    private function dateTimeFormatTimeZone () {
+        return Carbon::now('Asia/bangkok')->format('Y-m-d H:i:s');
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -148,57 +160,59 @@ class PostController extends Controller
                 'title' => 'required|string',
                 'content' => 'required|string',
                 'refer' => 'required|string',
-                'typeID' => 'required|string',
+                'typeID' => 'required|integer',
                 'newType' => 'required|string',
                 'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
-            $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
-
-            if ($validated['newType'] != "") {
+            $type_id = $request->typeID;
+            if (!empty($request->newType)) {
                 $postType = PostType::create([
-                    'post_type_name' => $validated['newType'],
+                    'post_type_name' => $request->newType,
+                    'created_at' => $this->dateTimeFormatTimeZone()
                 ]);
-                $postIDConfirm = $postType->id;
-            } else {
-                $postIDConfirm = $validated['typeID'];
+                $type_id = $postType->id;
             }
 
-            $post = Post::create([
-                'post_title' => $validated['title'],
-                'post_content' => $validated['content'],
-                'refer' => $validated['refer'],
-                'type_id' => $postIDConfirm,
-                'user_id' => $validated['userID'],
-                'deletetion_status' => "false", // status 0 == false // status 1 == true
-                'block_status' => "false",
-                'created_at' => $dateTimeNow,
-            ]);
-
-            if ($request->file('imageFile')) {
-
-                $imageFile = $request->file('imageFile');
-                $imageData = file_get_contents($imageFile->getRealPath());
-                $imageDataBase64 = base64_encode($imageData);
-
-                $postImage = PostImage::create([
-                    'post_id' => $post->id,
-                    'image_data' => $imageDataBase64,
-                    'created_at' => $dateTimeNow,
+            if ($type_id) {
+                $post = Post::create([
+                    'post_title' => $validated['title'],
+                    'post_content' => $validated['content'],
+                    'refer' => $validated['refer'],
+                    'type_id' => $type_id,
+                    'user_id' => $validated['userID'],
+                    'deletetion_status' => "false", // status 0 == false // status 1 == true
+                    'block_status' => "false",
+                    'created_at' => $this->dateTimeFormatTimeZone(),
                 ]);
-            }
 
-            if ($post) {
-                return response()->json([
-                    'message' => "laravel api store response false"
-                ], 204);
+                if ($request->file('imageFile')) {
+
+                    $imageFile = $request->file('imageFile');
+                    $imageData = file_get_contents($imageFile->getRealPath());
+                    $imageDataBase64 = base64_encode($imageData);
+
+                    $postImage = PostImage::create([
+                        'post_id' => $post->id,
+                        'image_data' => $imageDataBase64,
+                        'created_at' => $this->dateTimeFormatTimeZone(),
+                    ]);
+                }
+
+                if ($post && $postImage) {
+                    return response()->json([
+                        'message' => 'Laravel function store successfully.',
+                        'post' => $post,
+                        'imageDataBase64' => $imageDataBase64,
+                    ], 201);
+                }
+
             }
 
             return response()->json([
-                'message' => 'Laravel function store successfully.',
-                'post' => $post,
-                'status' => 201
-            ], 201);
+                'message' => "laravel api store response false"
+            ], 204);
+
         } catch (\Exception $error) {
 
             Log::error("Laravel function store error", [

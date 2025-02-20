@@ -152,13 +152,11 @@ class UserProfileController extends Controller
                     ];
                 }),
 
-                'userProfileImage' => $userProfile->userProfileImage->map(function ($image) {
-                    return $image ? [
-                        'id' => $image->id,
-                        'image_path' => $image->image_path,
-                        'image_name' => $image->image_name,
-                        'image_data' => $image->image_data ? 'data:image/png;base64,' . base64_encode($image->image_data) : null,
-                    ] : null;
+                'userProfileImage' => $userProfile->userProfileImage->map(function ($profileImage) {
+                    return [
+                        'id' => $profileImage->id,
+                        'imageData' => $profileImage->image_data,
+                    ];
                 }),
 
                 'userProfileContact' => $userProfile->userProfileContact->map(function ($contact) {

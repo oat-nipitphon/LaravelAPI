@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class UserImageController extends Controller
 {
+
+    private function dateTimeFormatTimeZone () {
+        return Carbon::now('Asia/bangkok')->format('Y-m-d H:i:s');
+    }
+
     public function uploadUserImage (Request $request) {
         try {
 
@@ -25,24 +30,29 @@ class UserImageController extends Controller
                 $imageData = file_get_contents($imageFile->getRealPath());
                 $imageDataBase64 = base64_encode($imageData);
 
-                $userImage = UserImage::create([
-                    'user_id' => $validated['userID'],
-                    'image_data' => $imageDataBase64,
-                ]);
+                $userImage = UserImage::where('user_id', $request->userID)->first();
 
-            }
+                if ($userImage) {
+                    $checkStatus = $userImage->update([
+                        'image_data' => $imageDataBase64,
+                        'updated_at' => $this->dateTimeFormatTimeZone()
+                    ]);
 
-            if (!$userImage) {
+                } else {
+                    $checkStatus = UserImage::create([
+                        'user_id' => $validated['userID'],
+                        'image_data' => $imageDataBase64,
+                        'created_at' => $this->dateTimeFormatTimeZone(),
+                    ]);
+                }
+
                 return response()->json([
-                    'message' => "upload user image false",
-                    'image_data' => $imageDataBase64
-                ], 204);
-            }
+                    'message' => "api user upload image success",
+                    'userImage' => $userImage,
+                    'checkStatus' => $checkStatus,
+                ], 200);
 
-            return response()->json([
-                'message' => "upload user image true",
-                'image_data' => $imageDataBase64
-            ], 201);
+            }
 
         } catch (\Exception $error) {
             return response()->json([
