@@ -18,10 +18,10 @@ class AdminManagerUserProfileController extends Controller
         try {
 
             $userProfiles = User::with(
+                'userImage',
                 'statusUser',
                 'latestUserLogin',
                 'userProfiles',
-                'userProfileImage',
                 'userProfileContact'
             )->get()->map(function ($user) {
                 return $user ? [
@@ -39,14 +39,16 @@ class AdminManagerUserProfileController extends Controller
                         'created_at' => $user->latestUserLogin->created_at,
                         'updated_at' => $user->latestUserLogin->updated_at,
                         'total_time_login' => $user->latestUserLogin->total_time_login,
-                    ] : [
-                        'id' => "null",
-                        'user_id' => "null",
-                        'status_login' => "null",
-                        'created_at' => "null",
-                        'updated_at' => "null",
-                        'total_time_login' => "null",
-                    ],
+                    ] : null,
+                    'userImage' => $user->userImage->map(function ($userImage) {
+                        return $userImage ? [
+                            'id' => $userImage->id,
+                            'user_id' => $userImage->user_id,
+                            'imageData' => $userImage->image_data,
+                            'created_at' => $userImage->created_at,
+                            'updated_at' => $userImage->updated_at,
+                        ] : null;
+                    }),
                     'userProfile' => $user->userProfiles->map(function ($profile) {
                         return $profile ? [
                             'id' => $profile->id,
@@ -60,35 +62,12 @@ class AdminManagerUserProfileController extends Controller
                             'updated_at' => $profile->updated_at,
                         ] : null;
                     }),
-                    'userProfileImage' => $user->userProfileImage->map(function ($image) {
-                        return $image ? [
-                            'id' => $image->id,
-                            'user_id' => $image->user_id,
-                            'image_name' => $image->image_name,
-                            'image_path' => $image->image_path,
-                            'image_url' => $image->image_url,
-                            'image_data' => $image->image_data,
-                            'created_at' => $image->created_at,
-                            'updated_at' => $image->updated_at,
-                        ] : null;
-                    }),
-                    'userContact' => $user->userProfileContact->map(function ($contact) {
-                        return $contact ? [
-                            'id' => $contact->id,
-                            'user_id' => $contact->user_id,
-                            'contact_name' => $contact->contact_name,
-                            'contact_link_address' => $contact->contact_link_address,
-                            'contact_link_path' => $contact->contact_link_path,
-                            'contact_icon_name' => $contact->contact_icon_name,
-                            'contact_icon_url' => $contact->contact_icon_url,
-                            'contact_icon_data' => $contact->contact_icon_data,
-                            'created_at' => $contact->created_at,
-                            'updated_at' => $contact->updated_at,
-                        ] : null;
-                    }),
+
 
                 ] : null;
             });
+
+            dd($userProfiles);
 
             if ($userProfiles) {
                 return response()->json([
