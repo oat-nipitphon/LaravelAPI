@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 use App\Models\User;
-use App\Models\StatusUser;
+use App\Models\UserStatus;
 use App\Models\Post;
 use App\Models\PostImage;
 use App\Models\PostPopularity;
@@ -27,16 +27,9 @@ use App\Http\Controllers\AdminManagerUserProfileController;
 
 // User
 Route::middleware(['auth:sanctum'])->get('/user', [AuthController::class, 'index']);
-// Route::get('/user', [AuthController::class, 'index']);
+Route::get('/authStore', [AuthController::class, 'index']);
 Route::get('/status_user', function () {
-    $userStatus = StatusUser::all()
-    ->map(function ($type) {
-        return $type ? [
-            'id' => $type->id,
-            'name' => $type->status_name,
-        ] : null;
-    });
-
+    $userStatus = UserStatus::all();
     return response()->json([
         'userStatus' => $userStatus,
     ], 200);
@@ -154,5 +147,4 @@ Route::prefix('/admin')->group(function () {
                 'destroy'
             ]);
     });
-});
-// ->middleware('auth:sanctum');
+})->middleware('auth:sanctum');

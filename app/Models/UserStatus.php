@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class StatusUser extends Model
+class UserStatus extends Model
 {
-        /**
+            /**
      * The table associated with the model.
      *
      * @var string
@@ -15,11 +15,11 @@ class StatusUser extends Model
     protected $table = 'user_status';
     protected $fillable = [
         'id',
+        'status_code',
         'status_name'
     ];
 
     public function user () : HasOne {
         return $this->HasOne(User::class);
     }
-
 }

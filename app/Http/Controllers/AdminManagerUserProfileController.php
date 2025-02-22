@@ -19,7 +19,7 @@ class AdminManagerUserProfileController extends Controller
 
             $userProfiles = User::with(
                 'userImage',
-                'statusUser',
+                'userStatus',
                 'latestUserLogin',
                 'userProfiles',
                 'userProfileContact'
@@ -32,6 +32,11 @@ class AdminManagerUserProfileController extends Controller
                     'status_id' => $user->status_id,
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
+                    'userStatus' => $user->userStatus ? [
+                        'id' => $user->userStatus->id,
+                        'status_code' => $user->userStatus->status_code,
+                        'status_name' => $user->userStatus->status_name,
+                    ] : null,
                     'userLogin' => $user->latestUserLogin ? [
                         'id' => $user->latestUserLogin->id,
                         'user_id' => $user->latestUserLogin->user_id,
@@ -62,12 +67,25 @@ class AdminManagerUserProfileController extends Controller
                             'updated_at' => $profile->updated_at,
                         ] : null;
                     }),
+                    'userProfileContact' => $user->userProfileContact->map(function ($contact) {
+                        return $contact ? [
+                            'id' => $contact->id,
+                            'user_id' => $contact->user_id,
+                            'contact_name' => $contact->contact_name,
+                            'contact_link_address' => $contact->contact_link_address,
+                            'contact_link_path' => $contact->contact_link_path,
+                            'contact_icon_name' => $contact->contact_icon_name,
+                            'contact_icon_url' => $contact->contact_icon_url,
+                            'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
+                                                    . base64_encode($contact->contact_icon_data) : null,
+                            'created_at' => $contact->created_at,
+                            'updated_at' => $contact->updated_at,
+                        ] : null;
+                    }),
 
 
                 ] : null;
             });
-
-            dd($userProfiles);
 
             if ($userProfiles) {
                 return response()->json([

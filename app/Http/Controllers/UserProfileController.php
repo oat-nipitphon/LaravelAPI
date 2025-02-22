@@ -23,10 +23,11 @@ class UserProfileController extends Controller
         try {
 
             $userProfiles = User::with(
-                'userProfileContact',
-                'userProfile.userProfileImage',
                 'userLogin',
-                'statusUser',
+                'userStatus',
+                'userImage',
+                'userProfile',
+                'userProfileContact',
                 'posts',
                 'userFollowersProfile',
                 'userFollowersAccount'
@@ -119,7 +120,7 @@ class UserProfileController extends Controller
                 'userProfileContact',
                 'userProfileImage',
                 'userLogin',
-                'statusUser',
+                'userStatus',
                 'posts',
                 'userFollowersProfile',
                 'userFollowersAccount'
@@ -131,9 +132,9 @@ class UserProfileController extends Controller
                 'name' => $userProfile->name,
                 'username' => $userProfile->username,
 
-                'statusUser' => $userProfile->statusUser ? [
-                    'id' => $userProfile->statusUser->id,
-                    'status_name' => $userProfile->statusUser->status_name,
+                'userStatus' => $userProfile->userStatus ? [
+                    'id' => $userProfile->userStatus->id,
+                    'status_name' => $userProfile->userStatus->status_name,
                 ] : null,
 
                 'userProfile' => $userProfile->userProfile ? [
@@ -146,17 +147,10 @@ class UserProfileController extends Controller
                 ] : null,
 
                 'userImage' => $userProfile->userImage->map(function ($userImage) {
-                    return [
+                    return $userImage ? [
                         'id' => $userImage->id,
                         'imageData' => $userImage->image_data,
-                    ];
-                }),
-
-                'userProfileImage' => $userProfile->userProfileImage->map(function ($profileImage) {
-                    return [
-                        'id' => $profileImage->id,
-                        'imageData' => $profileImage->image_data,
-                    ];
+                    ] : null;
                 }),
 
                 'userProfileContact' => $userProfile->userProfileContact->map(function ($contact) {

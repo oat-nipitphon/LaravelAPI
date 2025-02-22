@@ -246,13 +246,18 @@ class AuthController extends Controller
                 'status_id' => $user_login->status_id,
                 'created_at' => $user_login->created_at,
                 'updated_at' => $user_login->updated_at,
+                'userStatus' => $user_login->userStatus ? [
+                    'id' => $user_login->userStatus->id,
+                    'status_code' => $user_login->userStatus->status_code,
+                    'status_name' => $user_login->userStatus->status_name,
+                ] : null,
                 'userLogin' => $user_login->latestUserLogin ? [
-                    'id' => $user_login?->latestUserLogin->id,
-                    'user_id' => $user_login?->latestUserLogin->user_id,
-                    'status_login' => $user_login?->latestUserLogin->status_login,
-                    'created_at' => $user_login?->latestUserLogin->created_at,
-                    'updated_at' => $user_login?->latestUserLogin->updated_at,
-                    'total_time_login' => $user_login?->latestUserLogin->total_time_login,
+                    'id' => $user_login->latestUserLogin->id,
+                    'user_id' => $user_login->latestUserLogin->user_id,
+                    'status_login' => $user_login->latestUserLogin->status_login,
+                    'created_at' => $user_login->latestUserLogin->created_at,
+                    'updated_at' => $user_login->latestUserLogin->updated_at,
+                    'total_time_login' => $user_login->latestUserLogin->total_time_login,
                 ] : null,
                 'userProfile' => $user_login->userProfile ? [
                     'id' => $user_login->userProfile->id,
@@ -270,12 +275,6 @@ class AuthController extends Controller
                         'id' => $userImage->id,
                         'imageData' => $userImage->image_data,
                     ];
-                }),
-                'userProfileImage' => $user_login->userProfileImage->map(function ($profileImage) {
-                    return $profileImage ? [
-                        'id' => $profileImage->id,
-                        'imageData' => $profileImage->image_data ? 'data:image/png;base64,' . base64_encode($profileImage->image_data) : null,
-                    ] : null;
                 }),
                 'userProfileContact' => $user_login->userProfileContact ?
                     $user_login->userProfileContact->map(function ($contact) {

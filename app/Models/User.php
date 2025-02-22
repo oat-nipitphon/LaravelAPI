@@ -84,8 +84,8 @@ class User extends Authenticatable
         return $this->HasMany(UserProfileImage::class, 'user_id', 'id');
     }
 
-    public function statusUser () : BelongsTo {
-        return $this->belongsTo(StatusUser::class, 'status_id', 'id');
+    public function userStatus () : BelongsTo {
+        return $this->belongsTo(userStatus::class, 'status_id', 'id');
     }
 
     // UserProfileController Show Card user profile
