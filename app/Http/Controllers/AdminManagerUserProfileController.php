@@ -21,7 +21,7 @@ class AdminManagerUserProfileController extends Controller
                 'userImage',
                 'userStatus',
                 'latestUserLogin',
-                'userProfiles',
+                'userProfile',
                 'userProfileContact'
             )->get()->map(function ($user) {
                 return $user ? [
@@ -45,28 +45,29 @@ class AdminManagerUserProfileController extends Controller
                         'updated_at' => $user->latestUserLogin->updated_at,
                         'total_time_login' => $user->latestUserLogin->total_time_login,
                     ] : null,
+
+                    'userProfile' => $user->userProfile ? [
+                        'id' => $user->userProfile->id,
+                        'user_id' => $user->userProfile->user_id,
+                        'title_name' => $user->userProfile->title_name,
+                        'full_name' => $user->userProfile->full_name,
+                        'nick_name' => $user->userProfile->nick_name,
+                        'tel_phone' => $user->userProfile->tel_phone,
+                        'birth_day' => $user->userProfile->birth_day,
+                        'created_at' => $user->userProfile->created_at,
+                        'updated_at' => $user->userProfile->updated_at,
+                    ] : null,
+
                     'userImage' => $user->userImage->map(function ($userImage) {
-                        return $userImage ? [
+                        return [
                             'id' => $userImage->id,
                             'user_id' => $userImage->user_id,
                             'imageData' => $userImage->image_data,
                             'created_at' => $userImage->created_at,
                             'updated_at' => $userImage->updated_at,
-                        ] : null;
+                        ];
                     }),
-                    'userProfile' => $user->userProfiles->map(function ($profile) {
-                        return $profile ? [
-                            'id' => $profile->id,
-                            'user_id' => $profile->user_id,
-                            'title_name' => $profile->title_name,
-                            'full_name' => $profile->full_name,
-                            'nick_name' => $profile->nick_name,
-                            'tel_phone' => $profile->tel_phone,
-                            'birth_day' => $profile->birth_day,
-                            'created_at' => $profile->created_at,
-                            'updated_at' => $profile->updated_at,
-                        ] : null;
-                    }),
+
                     'userProfileContact' => $user->userProfileContact->map(function ($contact) {
                         return $contact ? [
                             'id' => $contact->id,
