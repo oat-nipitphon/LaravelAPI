@@ -19,6 +19,7 @@ use App\Models\PostDeletetion;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserImageController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserProfileImageController;
@@ -43,11 +44,12 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 
 // Users
-Route::apiResource('/users', App\Http\Controllers\UserController::class)->middleware('auth:sanctum');
-
+Route::apiResource('/users', UserController::class)->middleware('auth:sanctum');
+Route::post('/update/user', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
 
 // User Profiles
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
+Route::post('/update/user_profiles', [ UserProfileController::class, 'updateProfile'])->middleware('auth:sanctum');
 Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 Route::post('/uploadImageUserProfile', [UserProfileImageController::class, 'uploadImageUserProfile'])->middleware('auth:sanctum');
 Route::post('/user/upload/image', [UserImageController::class, 'uploadUserImage'])->middleware('auth:sanctum');

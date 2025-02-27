@@ -197,6 +197,39 @@ class UserProfileController extends Controller
     /**
      * Update the specified resource in storage.
      */
+
+    public function updateProfile (Request $req) {
+        try {
+            $req->validate([
+                'profileID' => 'required|integer',
+                'titleName' => 'required|string',
+                'fullName' => 'required|string',
+                'nickName' => 'required|string',
+                'telPhone' => 'required|string',
+                'birthDay' => 'required|date',
+            ]);
+
+            $profile = UserProfile::findOrFail($req->profileID);
+
+            $profile->update([
+                'title_name' => $req->titleName,
+                'full_name' => $req->fullName,
+                'nick_name' => $req->nickName,
+                'tel_phone' => $req->telPhone,
+                'birth_day' => $req->birthDay,
+            ]);
+
+            return response()->json([
+                'message' => "api profile controller success",
+                'user' => $profile
+            ]);
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "api profile controller function error" . $error->getMessage()
+            ]);
+        }
+    }
+
     public function update(Request $request, UserProfile $userProfile)
     {
         try {
