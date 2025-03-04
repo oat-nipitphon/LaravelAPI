@@ -30,6 +30,8 @@ class UserProfile extends Model
         return $this->HasOne(User::class);
     }
 
-
+    public function ProfileContact () : HasMany {
+        return $this->HasMany(ProfileContact::class, 'profile_id', 'id');
+    }
 
 }

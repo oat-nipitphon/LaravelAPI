@@ -11,16 +11,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 use App\Models\User;
+use App\Models\UserProfile;
+use App\Models\ProfileContact;
 use App\Models\UserStatus;
+
 use App\Models\Post;
 use App\Models\PostImage;
 use App\Models\PostPopularity;
 use App\Models\PostDeletetion;
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserImageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileContactController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserImageController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserProfileImageController;
 use App\Http\Controllers\AdminManagerPostController;
@@ -35,6 +39,36 @@ Route::get('/status_user', function () {
         'userStatus' => $userStatus,
     ], 200);
 });
+
+Route::get('/testContact', function () {
+    $user = User::with([
+        'userProfile',
+        'userProfile.profileContact' // ใช้ชื่อให้ตรงกับที่กำหนดใน Model
+    ])->get()->map(function ($row) {
+        return [
+            'id' => $row->id,
+            'name' => $row->name,
+            'userProfile' => $row->userProfile ? [
+                'fullName' => $row->userProfile->full_name
+            ] : null,
+            'profileContacts' => $row->userProfile ?
+            $row->userProfile->profileContact->map(function ($contact) {
+                return [
+                    'name' => $contact->name,
+                    'url' => $contact->url,
+                    'icon' => $contact->icon_data
+                ];
+            }) : [],
+        ];
+    });
+
+    return response()->json([
+        'message' => "api profile contact success",
+        'user' => $user
+    ], 200);
+});
+
+Route::post('/newContacts', [ProfileContactController::class, 'newContact']);
 
 
 Route::post('/register', [AuthController::class, 'register']);
