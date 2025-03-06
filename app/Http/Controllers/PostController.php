@@ -88,26 +88,10 @@ class PostController extends Controller
                             'updatedAt' => $post->user->userProfile->updated_at,
                         ] : null,
 
-                        'userImage' => $post->user->userImage->isNotEmpty()
-                            ? $post->user->userImage->map(function ($image) {
-                                return [
-                                    'id' => $image->id,
-                                    'imageName' => 'default_image.jpg',
-                                    'imageData' => $image->image_data,
-                                ];
-                            })
-                            : [[
-
-                                'imageName' => 'default_image.jpg',
-
-                            ]],
-
-                        'userProfileImage' => $post->user->userProfileImage->map(function ($profileImage) {
-                            return $profileImage ? [
-                                'id' => $profileImage->id,
-                                'imagePath' => $profileImage->image_path,
-                                'imageName' => $profileImage->image_name,
-                                'imageData' => $profileImage->image_data ? 'data:image/png;base64,' . base64_encode($profileImage->image_data) : null,
+                        'userImage' => $post->user->userImage->map(function ($image) {
+                            return $image ? [
+                                'id' => $image->id,
+                                'imageData' => $image->image_data
                             ] : null;
                         }),
 

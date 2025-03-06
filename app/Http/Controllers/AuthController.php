@@ -23,11 +23,12 @@ class AuthController extends Controller
     {
         try {
             $validate = $request->validate([
-                'username' => 'required|string|max:255|unique:users',
                 'email' => 'required|string|email|max:255|unique:users',
+                'username' => 'required|string|max:255|unique:users',
                 'password' => 'required|string|min:3',
                 'statusID' => 'required|integer',
             ]);
+
 
             $dateTimeNow = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
@@ -40,40 +41,40 @@ class AuthController extends Controller
                 'created_at' => $dateTimeNow
             ]);
 
-
-            $token = $user->createToken($user->username)->plainTextToken;
-
-            if ($user && $token) {
-
-                $userProfile = UserProfile::create([
-                    'user_id' => $user->id,
-                    'created_at' => $dateTimeNow,
-                ]);
-
-                $user_login = UserLogin::create([
-                    'user_id' => $user->id,
-                    'status_login' => "online",
-                    'created_at' => $dateTimeNow,
-                ]);
-
-                if (!$user_login) {
-                    return response()->json([
-                        'message' => "register required false",
-                        'token' => false,
-                        'user' => false,
-                        'userProfile' => false,
-                        'user_login' => false,
-                    ], 204);
-                }
+            if (empty($user)) {
                 return response()->json([
-                    'message' => "register success",
-                    'token' => $token,
-                    'user' => $user,
-                    'userProfile' => $userProfile,
-                    'user_login' => $user_login,
-                ], 200);
+                    'message' => 'api register user false'
+                ]);
             }
 
+            $userProfile = UserProfile::create([
+                'user_id' => $user->id,
+                'created_at' => $dateTimeNow
+            ]);
+
+            if (empty($userProfile)) {
+                return response()->json([
+                    'message' => 'api register user profile false'
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'api register success',
+                'user' => $user,
+                'userProfile' => $userProfile
+            ], 201);
+
+
+            // Register Success Login Yes ?
+            // $token = $user->createToken($validate['username']);
+            // if (isset($token)) {
+            //     return response()->json([
+            //         'message' => 'api register success',
+            //         'user' => $user,
+            //         'profile' => $userProfile,
+            //         'token' => $token->pla
+            //     ], 201);
+            // }
 
         } catch (\Exception $error) {
             return response()->json([

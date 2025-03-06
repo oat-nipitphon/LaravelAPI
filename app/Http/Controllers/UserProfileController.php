@@ -114,9 +114,10 @@ class UserProfileController extends Controller
     {
         try {
 
-            $userProfile = User::with(
+            $user = User::with(
                 'userImage',
                 'userProfile',
+                'userProfile.ProfileContact',
                 'userProfileContact',
                 'userProfileImage',
                 'userLogin',
@@ -126,57 +127,55 @@ class UserProfileController extends Controller
                 'userFollowersAccount'
             )->findOrFail($id);
 
-            $userProfiles = [
-                'id' => $userProfile->id,
-                'email' => $userProfile->email,
-                'name' => $userProfile->name,
-                'username' => $userProfile->username,
-
-                'userStatus' => $userProfile->userStatus ? [
-                    'id' => $userProfile->userStatus->id,
-                    'status_name' => $userProfile->userStatus->status_name,
+            $userProfile = [
+                'id' => $user->id,
+                'email' => $user->email,
+                'name' => $user->name,
+                'username' => $user->username,
+                'statusID' => $user->status_id,
+                'userStatus' => $user->userStatus ? [
+                    'id' => $user->userStatus->id,
+                    'statusName' => $user->userStatus->status_name,
                 ] : null,
 
-                'userProfile' => $userProfile->userProfile ? [
-                    'id' => $userProfile->userProfile->id,
-                    'title_name' => $userProfile->userProfile->title_name,
-                    'full_name' => $userProfile->userProfile->full_name,
-                    'nick_name' => $userProfile->userProfile->nick_name,
-                    'tel_phone' => $userProfile->userProfile->tel_phone,
-                    'birth_day' => $userProfile->userProfile->birth_day,
+                'userProfile' => $user->userProfile ? [
+                    'id' => $user->userProfile->id,
+                    'titleName' => $user->userProfile->title_name,
+                    'fullName' => $user->userProfile->full_name,
+                    'nickName' => $user->userProfile->nick_name,
+                    'telPhone' => $user->userProfile->tel_phone,
+                    'birthDay' => $user->userProfile->birth_day,
                 ] : null,
 
-                'userImage' => $userProfile->userImage->map(function ($userImage) {
-                    return $userImage ? [
-                        'id' => $userImage->id,
-                        'imageData' => $userImage->image_data,
-                    ] : null;
+                'userImage' => $user->userImage->map(function ($image) {
+                    return [
+                        'id' => $image->id,
+                        'imageData' => $image->image_data,
+                    ];
                 }),
 
-                'userProfileContact' => $userProfile->userProfileContact->map(function ($contact) {
-                    return $contact ? [
-                        'id' => $contact->id,
-                        'contact_name' => $contact->contact_name,
-                        'contact_link_path' => $contact->contact_link_path,
-                        'contact_icon_name' => $contact->contact_icon_name,
-                        'contact_icon_url' => $contact->contact_icon_url,
-                        'contact_icon_data' => $contact->contact_icon_data ? 'data:image/png;base64,'
-                            . base64_encode($contact->contact_icon_data) : null,
-                    ] : null;
+                'profileContact' => $user->userProfile->ProfileContact->map(function ($row) {
+                    return [
+                        'id' => $row->id,
+                        'profileID' => $row->profile_id,
+                        'name' => $row->name,
+                        'url' => $row->url,
+                        'icon' => $row->icon_data
+                    ];
                 }),
 
             ];
 
-            if ($userProfiles) {
+            if ($userProfile) {
                 return response()->json([
                     'message' => "Laravel get user profile detail success",
-                    'userProfiles' => $userProfiles
+                    'userProfile' => $userProfile
                 ], 200);
             }
 
             return response()->json([
                 'message' => "laravel get user profile not success.",
-                'userProfiles' => $userProfiles
+                'userProfiles' => $userProfile
             ], 204);
         } catch (\Exception $e) {
             return response()->json([
@@ -198,34 +197,42 @@ class UserProfileController extends Controller
      * Update the specified resource in storage.
      */
 
-    public function updateProfile (Request $req) {
+    public function updateProfile (Request $request) {
         try {
-            $req->validate([
-                'profileID' => 'required|integer',
-                'titleName' => 'required|string',
-                'fullName' => 'required|string',
-                'nickName' => 'required|string',
-                'telPhone' => 'required|string',
-                'birthDay' => 'required|date',
+            $request->validate([
+                'profileID' => 'required|string',
+                'titleName' => 'nullable|string',
+                'fullName' => 'nullable|string',
+                'nickName' => 'nullable|string',
+                'telPhone' => 'nullable|string',
+                'birthDay' => 'nullable|date',
             ]);
 
-            $profile = UserProfile::findOrFail($req->profileID);
+            $profile = UserProfile::where($request->profileID)->first();
 
-            $profile->update([
-                'title_name' => $req->titleName,
-                'full_name' => $req->fullName,
-                'nick_name' => $req->nickName,
-                'tel_phone' => $req->telPhone,
-                'birth_day' => $req->birthDay,
-            ]);
+            return response()->json($profile);
+
+            if (!$profile) {
+                return response()->json([
+                    'message' => "api update profile not success"
+                ]);
+            }
+
+            $profile->update(array_filter([
+                'full_name' => $request->fullName,
+                'nick_name' => $request->nickName,
+                'tel_phone' => $request->telPhone,
+                'birth_day' => $request->birthDay,
+            ]));
 
             return response()->json([
-                'message' => "api profile controller success",
-                'user' => $profile
+                'message' => "api update profile successfully",
+                'profile' => $profile
             ]);
+
         } catch (\Exception $error) {
             return response()->json([
-                'message' => "api profile controller function error" . $error->getMessage()
+                'message' => "api user profile controller function update profile error" . $error->getMessage()
             ]);
         }
     }

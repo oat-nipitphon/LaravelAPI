@@ -111,27 +111,43 @@ class UserController extends Controller
      * Update the specified resource in storage.
      */
 
-    public function updateUser (Request $req) {
+    public function updateUser (Request $request) {
+        try {
 
-        $req->validate([
-            'userID' => 'required|integer',
-            'email' => 'required|string',
-            'username' => 'required|string'
-        ]);
+            $request->validate([
+                'userID' => 'required|integer|exists:users,id',
+                'email' => 'nullable|string|email',
+                'username' => 'nullable|string',
+                'name' => 'nullable|string',
+                'statusID' => 'nullable|integer',
+            ]);
 
-        $user = User::findOrFail($req->userID);
+            $user = User::findOrFail($request->userID);
 
-        $user->update([
-            'email' => $req->email,
-            'username' => $req->username,
-            'name' => $req->name
-        ]);
+            if (!$user) {
+                return response()->json([
+                    'message' => "api update user not success",
+                    'user' => $request->all()
+                ], 404);
+            }
 
-        return response()->json([
-            'message' => "api user controller success",
-            'user' => $user
-        ]);
+            $user->update(array_filter([
+                'email' => $request->email,
+                'username' => $request->username,
+                'name' => $request->username,
+                'status_id' => $request->statusID
+            ]));
 
+            return response()->json([
+                'message' => "api update user successfully",
+                'user' => $user
+            ], 200);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "api user controller function update user error" . $error->getMessage()
+            ]);
+        }
     }
 
     public function update(Request $request, string $id)

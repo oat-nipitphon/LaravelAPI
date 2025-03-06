@@ -40,33 +40,6 @@ Route::get('/status_user', function () {
     ], 200);
 });
 
-Route::get('/testContact', function () {
-    $user = User::with([
-        'userProfile',
-        'userProfile.profileContact' // ใช้ชื่อให้ตรงกับที่กำหนดใน Model
-    ])->get()->map(function ($row) {
-        return [
-            'id' => $row->id,
-            'name' => $row->name,
-            'userProfile' => $row->userProfile ? [
-                'fullName' => $row->userProfile->full_name
-            ] : null,
-            'profileContacts' => $row->userProfile ?
-            $row->userProfile->profileContact->map(function ($contact) {
-                return [
-                    'name' => $contact->name,
-                    'url' => $contact->url,
-                    'icon' => $contact->icon_data
-                ];
-            }) : [],
-        ];
-    });
-
-    return response()->json([
-        'message' => "api profile contact success",
-        'user' => $user
-    ], 200);
-});
 
 Route::post('/newContacts', [ProfileContactController::class, 'newContact']);
 
@@ -81,19 +54,20 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::apiResource('/users', UserController::class)->middleware('auth:sanctum');
 Route::post('/update/user', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
 
-// User Profiles
+// Profiles
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
-Route::post('/update/user_profiles', [ UserProfileController::class, 'updateProfile'])->middleware('auth:sanctum');
+Route::post('/update/profile', [ UserProfileController::class, 'updateProfile'])->middleware('auth:sanctum');
+
 Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 Route::post('/uploadImageUserProfile', [UserProfileImageController::class, 'uploadImageUserProfile'])->middleware('auth:sanctum');
 Route::post('/user/upload/image', [UserImageController::class, 'uploadUserImage'])->middleware('auth:sanctum');
 
 
 // Posts
-Route::apiResource('/posts', PostController::class);
-// ->middleware('auth:sanctum');
+Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
 Route::post('/posts/store/{postID}', [PostController::class, 'postStore']);
 Route::post('/posts/update', [PostController::class, 'update'])->middleware('auth:sanctum');
+
 // Post type
 Route::get('/postTypes', function () {
     $postTypes = App\Models\PostType::all();
@@ -101,47 +75,6 @@ Route::get('/postTypes', function () {
         'postTypes' => $postTypes,
     ], 200);
 });
-
-// Editor TipTap
-Route::post('/EditorTipTap/NewPost', function (Request $req) {
-    $req->validate([
-        'userID' => 'required|integer',
-        'title' => 'required|string',
-        'content' => 'required|string',
-        'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
-    if (!empty($req->content)) {
-        if ($req->hasFile('imageFile')) {
-            $imageFile = $req->file('imageImage');
-            $imageName = $imageFile->getClientOriginalName();
-            dd([
-                'content' => $req->title . $req->content,
-                'imageFile' => $req->file('imageFile'),
-                'imageName' => $imageName
-            ]);
-        }
-    } else {
-        dd($req);
-    }
-});
-
-Route::get('/get_posts', function () {
-    try {
-
-        $posts = Post::with('postType', 'postImage')->get();
-
-        return response()->json([
-            'message' => "Laravel api get posts success.",
-            'posts' => $posts
-        ], 200);
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => "Laravel api get posts error",
-            'error' => $e->getMessage()
-        ], 401);
-    }
-});
-
 
 // Post Recover
 Route::post('/posts/report_recover/{userID}', [PostController::class, 'recoverGetPost'])->middleware('auth:sanctum');
