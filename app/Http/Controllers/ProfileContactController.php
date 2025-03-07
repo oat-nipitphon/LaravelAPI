@@ -10,47 +10,6 @@ use Illuminate\Http\Request;
 class ProfileContactController extends Controller
 {
 
-    // public function newContact (Request $request) {
-
-    //     $validate = $request->validate([
-    //         'userID' => 'required|integer',
-    //         'profileID' => 'required|integer',
-    //     ]);
-
-    //     $contacts = $request->input('contacts', []);
-    //     $profileContact = new  ProfileContact();
-    //     $checkNewContact = false;
-
-    //     foreach ($contacts as $contact) {
-
-    //         if (isset($contact['imageIcon'])) {
-    //             $icon = $contact['imageIcon'];
-    //             $iconData = file_get_contents($icon->getRealPath());
-    //             $iconDatabase64 = base64_encode($iconData);
-    //         }
-
-    //         $profileContact->create([
-    //             'profile_id' => $validate['profileID'],
-    //             'name' => $contact['name'],
-    //             'url' => $contact['url'],
-    //             'icon_data' => $iconDatabase64
-    //         ]);
-
-    //         $checkNewContact = true;
-    //     }
-
-    //     if ($checkNewContact) {
-    //         return response()->json([
-    //             'message' => "api new contact success"
-    //         ], 201);
-    //     } else {
-    //         return response()->json([
-    //             'message' => "api new contact false"
-    //         ], 204);
-    //     }
-
-    // }
-
     public function newContact(Request $request)
     {
         // รับข้อมูลจาก request
@@ -154,9 +113,19 @@ class ProfileContactController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ProfileContact $profileContact)
+    public function show(ProfileContact $profileContact, int $profileID)
     {
-        //
+        try {
+
+            $profile = UserProfile::findOrFail($profileID);
+            $contactProfiles = $profile->profileContact;
+            dd($contactProfiles);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "api get contact profile function error" . $error->getMessage()
+            ], 500);
+        }
     }
 
     /**

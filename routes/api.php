@@ -58,6 +58,13 @@ Route::post('/update/user', [UserController::class, 'updateUser'])->middleware('
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
 Route::post('/update/profile', [ UserProfileController::class, 'updateProfile'])->middleware('auth:sanctum');
 
+// Contact Profile
+Route::prefix('/profile')->group(function () {
+
+    Route::apiResource('/contacts', ProfileContactController::class);
+
+})->middleware('auth:sanctum');
+
 Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
 Route::post('/uploadImageUserProfile', [UserProfileImageController::class, 'uploadImageUserProfile'])->middleware('auth:sanctum');
 Route::post('/user/upload/image', [UserImageController::class, 'uploadUserImage'])->middleware('auth:sanctum');

@@ -200,7 +200,7 @@ class UserProfileController extends Controller
     public function updateProfile (Request $request) {
         try {
             $request->validate([
-                'profileID' => 'required|string',
+                'profileID' => 'required|integer',
                 'titleName' => 'nullable|string',
                 'fullName' => 'nullable|string',
                 'nickName' => 'nullable|string',
@@ -208,32 +208,39 @@ class UserProfileController extends Controller
                 'birthDay' => 'nullable|date',
             ]);
 
-            $profile = UserProfile::where($request->profileID)->first();
+            $profile = UserProfile::findOrFail($request->profileID);
 
-            return response()->json($profile);
+            if ($profile) {
+                $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+                $profile->update(array_filter([
+                    'full_name' => $request->fullName,
+                    'nick_name' => $request->nickName,
+                    'tel_phone' => $request->telPhone,
+                    'birth_day' => $request->birthDay,
+                    'updated_at' => $dateTime
+                ]));
 
-            if (!$profile) {
                 return response()->json([
-                    'message' => "api update profile not success"
-                ]);
+                    'message' => "api update profile successfully",
+                    'profileID' => $request->profileID,
+                    'profile' => $profile,
+                    'status' => 200
+                ], 200);
+
+            } else {
+
+                return response()->json([
+                    'message' => "api update profile not success",
+                    'profileID' => $request->profileID,
+                    'status' => 404
+                ], 404);
+
             }
-
-            $profile->update(array_filter([
-                'full_name' => $request->fullName,
-                'nick_name' => $request->nickName,
-                'tel_phone' => $request->telPhone,
-                'birth_day' => $request->birthDay,
-            ]));
-
-            return response()->json([
-                'message' => "api update profile successfully",
-                'profile' => $profile
-            ]);
 
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "api user profile controller function update profile error" . $error->getMessage()
-            ]);
+            ], 500);
         }
     }
 

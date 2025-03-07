@@ -130,12 +130,13 @@ class UserController extends Controller
                     'user' => $request->all()
                 ], 404);
             }
-
+            $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
             $user->update(array_filter([
                 'email' => $request->email,
                 'username' => $request->username,
                 'name' => $request->username,
-                'status_id' => $request->statusID
+                'status_id' => $request->statusID,
+                'updated_at' => $dateTime
             ]));
 
             return response()->json([
