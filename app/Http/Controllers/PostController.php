@@ -16,6 +16,13 @@ use App\Models\PostPopularity;
 
 class PostController extends Controller
 {
+
+    // Function format date time
+    private function dateTimeFormatTimeZone()
+    {
+        return Carbon::now('Asia/bangkok')->format('Y-m-d H:i:s');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -134,12 +141,6 @@ class PostController extends Controller
         }
     }
 
-
-    private function dateTimeFormatTimeZone()
-    {
-        return Carbon::now('Asia/bangkok')->format('Y-m-d H:i:s');
-    }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -151,10 +152,10 @@ class PostController extends Controller
                 'userID' => 'required|integer',
                 'title' => 'required|string',
                 'content' => 'required|string',
-                'refer' => 'required|string',
-                'typeID' => 'required|integer',
-                'newType' => 'required|string',
-                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'refer' => 'nullable|string',
+                'typeID' => 'nullable|integer',
+                'newType' => 'nullable|string',
+                'imageFile' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $type_id = $request->typeID;
@@ -291,10 +292,10 @@ class PostController extends Controller
                 'postID' => 'required|integer',
                 'title' => 'required|string',
                 'content' => 'required|string',
-                'refer' => 'required|string',
-                'typeID' => 'required|integer',
-                'newType' => 'required|string',
-                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'refer' => 'nullable|string',
+                'typeID' => 'nullable|integer',
+                'newType' => 'nullable|string',
+                'imageFile' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $type_id = $request->typeID;
@@ -369,17 +370,20 @@ class PostController extends Controller
             DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
 
             $post = Post::findOrFail($id);
+
             if ($post) {
                 PostImage::where('post_id', $id)->delete();
                 PostPopularity::where('post_id', $id)->delete();
                 PostDeletetion::where('post_id', $id)->delete();
                 $post->delete();
             }
+
             DB::commit(); // บันทึกการเปลี่ยนแปลง
 
             return response()->json([
                 'message' => "Laravel API delete success",
             ], 200);
+
         } catch (\Exception $error) {
 
             Log::error("Laravel function destroy error", [
@@ -391,6 +395,29 @@ class PostController extends Controller
                 'message' => "Laravel function destroy error",
                 'error' => $error->getMessage()
             ], 500);
+        }
+    }
+
+    public function deleteSelected(Request $request)
+    {
+        try {
+
+            DB::beginTransaction();
+
+            Post::whereIn('id', $request->ids)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => "Posts deleted successfully",
+                'request' => $request
+            ], 200);
+
+        } catch (\Exception $error) {
+            DB::rollBack(); // Rollback ถ้ามีข้อผิดพลาดเกิดขึ้น
+            return response()->json([
+                'message' => "Error in delete function: " . $error->getMessage()
+            ], 500); // Return status 500 for internal server error
         }
     }
 

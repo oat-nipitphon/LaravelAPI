@@ -74,6 +74,7 @@ Route::post('/user/upload/image', [UserImageController::class, 'uploadUserImage'
 Route::apiResource('/posts', PostController::class)->middleware('auth:sanctum');
 Route::post('/posts/store/{postID}', [PostController::class, 'postStore']);
 Route::post('/posts/update', [PostController::class, 'update'])->middleware('auth:sanctum');
+Route::post('/posts/deleteSelected', [PostController::class, 'deleteSelected'])->middleware('auth:sanctum');
 
 // Post type
 Route::get('/postTypes', function () {
