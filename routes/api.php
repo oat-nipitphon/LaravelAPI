@@ -29,6 +29,7 @@ use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserProfileImageController;
 use App\Http\Controllers\AdminManagerPostController;
 use App\Http\Controllers\AdminManagerUserProfileController;
+use App\Http\Controllers\RewardController;
 
 // User
 Route::middleware(['auth:sanctum'])->get('/user', [AuthController::class, 'index']);
@@ -56,13 +57,12 @@ Route::post('/update/user', [UserController::class, 'updateUser'])->middleware('
 
 // Profiles
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
-Route::post('/update/profile', [ UserProfileController::class, 'updateProfile'])->middleware('auth:sanctum');
+Route::post('/update/profile', [UserProfileController::class, 'updateProfile'])->middleware('auth:sanctum');
 
 // Contact Profile
 Route::prefix('/profile')->group(function () {
 
     Route::apiResource('/contacts', ProfileContactController::class);
-
 })->middleware('auth:sanctum');
 
 Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
@@ -93,6 +93,13 @@ Route::post('/posts/recover/{postID}', [PostController::class, 'recoverPost'])->
 Route::prefix('/posts/popularity')->group(function () {
     Route::post('/{userID}/{postID}/{popStatusLike}', [PostController::class, 'postPopLike']);
     Route::post('/{userID}/{postID}/{popStatusDisLike}', [PostController::class, 'postPopDisLike']);
+})->middleware('auth:sanctum');
+
+
+// Reward
+Route::prefix('/reward')->group(function () {
+    Route::get('/getRewards', [RewardController::class, 'index']);
+    Route::post('/newRewards', [RewardController::class, 'store']);
 })->middleware('auth:sanctum');
 
 
