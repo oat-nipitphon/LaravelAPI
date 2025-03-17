@@ -38,6 +38,7 @@ class UserProfileController extends Controller
                 'message' => "Laravel api user profile success.",
                 'user_profile' => $userProfiles
             ], 200);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Laravel profile controller error",
@@ -124,7 +125,9 @@ class UserProfileController extends Controller
                 'userStatus',
                 'posts',
                 'userFollowersProfile',
-                'userFollowersAccount'
+                'userFollowersAccount',
+                'userPoint',
+                'userPoint.userPointCounter',
             )->findOrFail($id);
 
             $userProfile = [
@@ -164,6 +167,29 @@ class UserProfileController extends Controller
                     ];
                 }),
 
+                'userPoint' => $user->userPoint ? [
+                    'id' => $user->userPoint->id,
+                    'user_id' => $user->userPoint->user_id,
+                    'point' => $user->userPoint->point,
+                    'created_at' => $user->userPoint->created_at,
+                    'updated_at' => $user->userPoint->updated_at,
+                ] : null,
+
+                'userPointCounter' => $user->userPoint->userPointCounter ?
+                $user->userPoint->userPointCounter->map(function ($counter) {
+                    return [
+                        'id' => $counter->id,
+                        'user_point_id' => $counter->user_point_id,
+                        'user_id' => $counter->user_id,
+                        'reward_id' => $counter->reward_id,
+                        'point_import' => $counter->point_import,
+                        'point_export' => $counter->point_export,
+                        'detail_counter' => $counter->detail_counter,
+                        'created_at' => $counter->created_at,
+                        'updated_at' => $counter->updated_at,
+                    ];
+                }) : null,
+
             ];
 
             if ($userProfile) {
@@ -177,6 +203,7 @@ class UserProfileController extends Controller
                 'message' => "laravel get user profile not success.",
                 'userProfiles' => $userProfile
             ], 204);
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "laravel user profile function show error",

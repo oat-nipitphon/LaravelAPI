@@ -103,8 +103,7 @@ Route::prefix('/reward')->group(function () {
     Route::get('/show/{id}', [RewardController::class, 'show']);
     Route::put('/update/{id}', [RewardController::class, 'update']);
     Route::delete('/delete/{id}', [RewardController::class, 'destroy']);
-});
-// ->middleware('auth:sanctum');
+})->middleware('auth:sanctum');
 
 
 // ************************************** Route ADMIN ************************************** //

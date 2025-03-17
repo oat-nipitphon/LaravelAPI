@@ -76,6 +76,11 @@ class User extends Authenticatable
     //     return $this->hasManyThrough(Deployment::class, Environment::class);
     // }
 
+    public function userPoint(): HasOne
+    {
+        return $this->hasOne(UserPoint::class, 'user_id', 'id');
+    }
+
     public function userImage () : HasMany {
         return $this->HasMany(UserImage::class, 'user_id', 'id');
     }
