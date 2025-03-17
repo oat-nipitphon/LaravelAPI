@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('posts', function (Blueprint $table) {
+        Schema::create('rewards', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->double('point', 8, 2)->default(0); // ใช้ default(0) แทน nullable
+            $table->integer('quantity')->default(0); // เพิ่ม quantity
+            $table->boolean('status')->default(true); // เพิ่ม status เป็น boolean
             $table->timestamps();
         });
     }
@@ -22,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('posts');
+        Schema::dropIfExists('rewards');
     }
 };

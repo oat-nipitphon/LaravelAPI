@@ -100,7 +100,11 @@ Route::prefix('/posts/popularity')->group(function () {
 Route::prefix('/reward')->group(function () {
     Route::get('/getRewards', [RewardController::class, 'index']);
     Route::post('/newRewards', [RewardController::class, 'store']);
-})->middleware('auth:sanctum');
+    Route::get('/show/{id}', [RewardController::class, 'show']);
+    Route::put('/update/{id}', [RewardController::class, 'update']);
+    Route::delete('/delete/{id}', [RewardController::class, 'destroy']);
+});
+// ->middleware('auth:sanctum');
 
 
 // ************************************** Route ADMIN ************************************** //
