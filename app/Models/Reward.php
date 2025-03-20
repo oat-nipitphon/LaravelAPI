@@ -13,7 +13,7 @@ class Reward extends Model
         'id',
         'name',
         'point',
-        'quantity',
+        'amount',
         'status',
         'created_at',
         'updated_at'

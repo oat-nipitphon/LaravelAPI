@@ -2,14 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AuthLogin;
 use App\Models\User;
 use App\Models\UserLogin;
 use App\Models\UserProfile;
-use App\Models\UserProfileImage;
-use App\Models\UserProfileContact;
-use App\Models\UserFollowersAccount;
-use App\Models\UserFollowersProfile;
+use App\Models\UserStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +13,14 @@ use Carbon\Carbon;
 
 class AuthController extends Controller
 {
+
+
+    public function getStatusUser () {
+        $userStatus = UserStatus::all();
+        return response()->json([
+            'userStatus' => $userStatus,
+        ], 200);
+    }
 
     // Register
     public function register(Request $request)

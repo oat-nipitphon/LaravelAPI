@@ -23,6 +23,15 @@ class PostController extends Controller
         return Carbon::now('Asia/bangkok')->format('Y-m-d H:i:s');
     }
 
+
+    public function getTypePost () {
+        $postTypes = PostType::all();
+        return response()->json([
+            'postTypes' => $postTypes,
+        ], 200);
+    }
+
+
     /**
      * Display a listing of the resource.
      */

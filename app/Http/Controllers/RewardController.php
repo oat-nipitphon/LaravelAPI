@@ -28,7 +28,7 @@ class RewardController extends Controller
                 'id' => $reward->id,
                 'name' => $reward->name,
                 'point' => $reward->point,
-                'quantity' => $reward->quantity,
+                'amount' => $reward->amount,
                 'status' => $reward->status,
                 'created_at' => $reward->created_at,
                 'updated_at' => $reward->updated_at,
@@ -62,7 +62,7 @@ class RewardController extends Controller
             $validatedData = $request->validate([
                 'name' => 'required|string',
                 'point' => 'required|numeric',
-                'quantity' => 'required|integer',
+                'amount' => 'required|integer',
                 'status' => 'required|string',
                 'imageFile' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
@@ -70,7 +70,7 @@ class RewardController extends Controller
             $modelReward = Reward::create([
                 'name' => $validatedData['name'],
                 'point' => $validatedData['point'],
-                'quantity' => $validatedData['quantity'],
+                'amount' => $validatedData['amount'],
                 'status' => $validatedData['status']
             ]);
 
@@ -127,7 +127,7 @@ class RewardController extends Controller
                 'id' => $rewards->id,
                 'name' => $rewards->name,
                 'point' => $rewards->point,
-                'quantity' => $rewards->quantity,
+                'amount' => $rewards->amount,
                 'status' => $rewards->status,
                 'created_at' => $rewards->created_at,
                 'updated_at' => $rewards->updated_at,
@@ -178,7 +178,7 @@ class RewardController extends Controller
                 'rewardID' => 'required|integer',
                 'name' => 'required|string',
                 'point' => 'required|numeric',
-                'quantity' => 'required|integer',
+                'amount' => 'required|integer',
                 'status' => 'required|string',
                 'imageFile' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
@@ -195,7 +195,7 @@ class RewardController extends Controller
             $modelReward->update([
                 'name' => $request->name,
                 'point' => $request->point,
-                'quantity' => $request->quantity,
+                'amount' => $request->amount,
                 'status' => $request->status,
                 'updated_at' => $this->dateTimeFormatTimeZone()
             ]);
