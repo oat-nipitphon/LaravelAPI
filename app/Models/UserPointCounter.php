@@ -10,11 +10,9 @@ class UserPointCounter extends Model
     protected $table = 'user_point_counters';
     protected $fillable = [
         'id',
-        'user_point_id',
         'user_id',
         'reward_id',
-        'point_import',
-        'point_export',
+        'point_status',
         'detail_counter',
         'created_at',
         'updated_at'
@@ -22,7 +20,7 @@ class UserPointCounter extends Model
 
     public function userPoint(): BelongsTo
     {
-        return $this->belongsTo(UserPoint::class, 'user_point_id', 'id');
+        return $this->belongsTo(UserPoint::class, 'user_id', 'id');
     }
 
 }

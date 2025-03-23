@@ -24,7 +24,7 @@ class UserPoint extends Model
 
     public function userPointCounter(): HasMany
     {
-        return $this->hasMany(UserPointCounter::class, 'user_point_id', 'id');
+        return $this->hasMany(UserPointCounter::class, 'user_id', 'id');
     }
 
 }

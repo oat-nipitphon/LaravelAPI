@@ -321,7 +321,6 @@ class AuthController extends Controller
                         ? $user_login->userPoint->userPointCounter->map(function ($counter) {
                         return [
                             'id' => $counter->id,
-                            'user_point_id' => $counter->user_point_id,
                             'user_id' => $counter->user_id,
                             'reward_id' => $counter->reward_id,
                             'point_import' => $counter->point_import,
