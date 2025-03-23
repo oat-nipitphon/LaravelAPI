@@ -14,6 +14,7 @@ use App\Http\Controllers\UserProfileImageController;
 use App\Http\Controllers\AdminManagerPostController;
 use App\Http\Controllers\AdminManagerUserProfileController;
 use App\Http\Controllers\RewardController;
+use App\Http\Controllers\CartItemsController;
 
 
 
@@ -76,7 +77,9 @@ Route::prefix('/reward')->group(function () {
     Route::delete('/delete/{id}', [RewardController::class, 'destroy']);
 })->middleware('auth:sanctum');
 
-
+Route::prefix('/cartItems')->group(function () {
+    Route::post('userConfirmSelectReward', [CartItemsController::class, 'userConfirmSelectReward']);
+})->middleware('auth:sanctum');
 
 Route::prefix('/admin')->group(function () {
 

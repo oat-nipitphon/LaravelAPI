@@ -18,6 +18,9 @@ class RewardController extends Controller
         return Carbon::now('Asia/bangkok')->format('Y-m-d H:i:s');
     }
 
+
+
+
     /**
      * Display a listing of the resource.
      */

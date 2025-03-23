@@ -235,12 +235,17 @@ class AuthController extends Controller
         try {
             $user_req = $request->user();
             $user_login = User::with([
+
                 'userImage',
                 'userProfile',
                 'userProfileImage',
                 'userProfileContact',
-                'latestUserLogin'
+                'latestUserLogin',
+                'userPoint',
+                'userPoint.userPointCounter'
+
             ])->findOrFail($user_req->id);
+
             $token = $user_login->createToken($user_login->username)->plainTextToken;
 
             $user_login = [
@@ -251,11 +256,13 @@ class AuthController extends Controller
                 'status_id' => $user_login->status_id,
                 'created_at' => $user_login->created_at,
                 'updated_at' => $user_login->updated_at,
+
                 'userStatus' => $user_login->userStatus ? [
                     'id' => $user_login->userStatus->id,
                     'status_code' => $user_login->userStatus->status_code,
                     'status_name' => $user_login->userStatus->status_name,
                 ] : null,
+
                 'userLogin' => $user_login->latestUserLogin ? [
                     'id' => $user_login->latestUserLogin->id,
                     'user_id' => $user_login->latestUserLogin->user_id,
@@ -264,6 +271,7 @@ class AuthController extends Controller
                     'updated_at' => $user_login->latestUserLogin->updated_at,
                     'total_time_login' => $user_login->latestUserLogin->total_time_login,
                 ] : null,
+
                 'userProfile' => $user_login->userProfile ? [
                     'id' => $user_login->userProfile->id,
                     'user_id' => $user_login->userProfile->user_id,
@@ -275,12 +283,14 @@ class AuthController extends Controller
                     'created_at' => $user_login->userProfile->created_at,
                     'updated_at' => $user_login->userProfile->updated_at,
                 ] : null,
+
                 'userImage' => $user_login->userImage->map(function ($userImage) {
                     return [
                         'id' => $userImage->id,
                         'imageData' => $userImage->image_data,
                     ];
                 }),
+
                 'userProfileContact' => $user_login->userProfileContact ?
                     $user_login->userProfileContact->map(function ($contact) {
                         return $contact ? [
@@ -298,6 +308,30 @@ class AuthController extends Controller
                             'updatedAt' =>  $contact->updated_at,
                         ] : null;
                     }) : null,
+
+                    'userPoint' => $user_login->userPoint ? [
+                        'id' => $user_login->userPoint->id,
+                        'user_id' => $user_login->userPoint->user_id,
+                        'point' => $user_login->userPoint->point,
+                        'created_at' => $user_login->userPoint->created_at,
+                        'updated_at' => $user_login->userPoint->updated_at,
+                    ] : null,
+
+                    'userPointCounter' => $user_login->userPoint->userPointCounter
+                        ? $user_login->userPoint->userPointCounter->map(function ($counter) {
+                        return [
+                            'id' => $counter->id,
+                            'user_point_id' => $counter->user_point_id,
+                            'user_id' => $counter->user_id,
+                            'reward_id' => $counter->reward_id,
+                            'point_import' => $counter->point_import,
+                            'point_export' => $counter->point_export,
+                            'detail_counter' => $counter->detail_counter,
+                            'created_at' => $counter->created_at,
+                            'updated_at' => $counter->updated_at,
+                        ];
+                    }) : null,
+
             ];
 
             return response()->json([
