@@ -13,7 +13,7 @@ class PostCommentPopularity extends Model
         'comment_id',
         'post_id',
         'user_id',
-        'pop_status',
+        'status',
         'created_at',
         'updated_at'
     ];

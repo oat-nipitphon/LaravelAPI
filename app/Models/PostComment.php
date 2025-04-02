@@ -14,7 +14,7 @@ class PostComment extends Model
         'post_id',
         'user_id',
         'comment',
-        'status_edit',
+        'status',
         'created_at',
         'updated_at'
     ];

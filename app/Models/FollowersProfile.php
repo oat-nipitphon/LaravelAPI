@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserFollowersAccount extends Model
 {
-    protected $table = "user_followers_accounts";
+    protected $table = "followers_profiles";
     protected $fillable = [
         'id',
-        'user_id',
+        'profile_user_id',
         'followers_user_id'
     ];
 

@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rewards', function (Blueprint $table) {
+        Schema::create('post_images', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->double('point', 8, 2)->default(0); // ใช้ default(0) แทน nullable
-            $table->integer('quantity')->default(0); // เพิ่ม quantity
-            $table->boolean('status')->default(true); // เพิ่ม status เป็น boolean
+            $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
+            $table->string('image_path')->nullable();
+            $table->string('image_name')->nullable();
+            $table->string('image_url')->nullable();
+            $table->binary('image_data')->nullable();
             $table->timestamps();
+
+
         });
     }
 
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rewards');
+        Schema::dropIfExists('post_images');
     }
 };

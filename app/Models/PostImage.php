@@ -16,6 +16,7 @@ class PostImage extends Model
         'post_id',
         'image_path',
         'image_name',
+        'image_url',
         'image_data',
         'created_at',
         'updated_at'
