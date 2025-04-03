@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('user_points_counters', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
-            $table->foreignId('reward_id');
-            $table->foreignId('point_status');
-            $table->text('detail_counter');
+            $table->foreignId('user_id')->nullable();
+            $table->foreignId('reward_id')->nullable();
+            $table->foreignId('point_status')->nullable();
+            $table->text('detail_counter')->nullable();
             $table->timestamps();
         });
     }

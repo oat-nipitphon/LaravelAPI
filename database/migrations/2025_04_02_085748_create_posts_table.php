@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
-            $table->string('post_title');
-            $table->text('post_content');
+            $table->foreignId('user_id')->nullable();
+            $table->foreignId('type_id')->nullable();
+            $table->string('post_title')->nullable();
+            $table->text('post_content')->nullable();
             $table->string('refer')->nullable();
             $table->string('block_status')->nullable();
             $table->string('deletetion_status')->nullable();

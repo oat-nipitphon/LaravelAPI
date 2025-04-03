@@ -11,14 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_profile_contacts', function (Blueprint $table) {
+        Schema::create('user_images', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('user_contact')->nullable();
-            $table->string('contact_link')->nullable();
-            $table->string('contact_icon_name')->nullable();
-            $table->string('contact_icon_url')->nullable();
-            $table->binary('contact_icon_data')->nullable();
+            $table->string('image_path')->nullable();
+            $table->string('image_name')->nullable();
+            $table->binary('image_data')->nullable();
+            $table->string('image_url')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_profile_contacts');
+        Schema::dropIfExists('user_images');
     }
 };

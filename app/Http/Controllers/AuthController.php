@@ -15,7 +15,8 @@ class AuthController extends Controller
 {
 
 
-    public function getStatusUser () {
+    public function getStatusUser()
+    {
         $userStatus = UserStatus::all();
         return response()->json([
             'userStatus' => $userStatus,
@@ -174,10 +175,7 @@ class AuthController extends Controller
                     'token' => $token,
                     'user' => $user,
                 ], 200);
-
             }
-
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error during login.',
@@ -217,7 +215,6 @@ class AuthController extends Controller
                     'status' => 200,
                     'message' => "Laravel function logout successfullry",
                 ], 200);
-
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -241,8 +238,8 @@ class AuthController extends Controller
                 'userProfileImage',
                 'userProfileContact',
                 'latestUserLogin',
-                'userPoint',
-                'userPoint.userPointCounter'
+                // 'userPoint',
+                // 'userPoint.userPointCounter'
 
             ])->findOrFail($user_req->id);
 
@@ -291,47 +288,33 @@ class AuthController extends Controller
                     ];
                 }),
 
-                'userProfileContact' => $user_login->userProfileContact ?
-                    $user_login->userProfileContact->map(function ($contact) {
-                        return $contact ? [
-                            'id' =>  $contact->id,
-                            'userID' =>  $contact->user_id,
-                            'name' =>  $contact->contact_name,
-                            'linkAdress' => $contact->contact_link_address,
-                            'contactPath' =>  $contact->contact_link_path,
-                            'contactName' =>  $contact->contact_icon_name,
-                            'contactUrl' =>  $contact->contact_icon_url,
-                            'contactData' =>  $contact->contact_icon_data ? 'data:image/png;base64,'
-                                . base64_encode($contact->contact_icon_data)
-                                : null,
-                            'createdAt' =>  $contact->created_at,
-                            'updatedAt' =>  $contact->updated_at,
-                        ] : null;
-                    }) : null,
 
-                    'userPoint' => $user_login->userPoint ? [
-                        'id' => $user_login->userPoint->id,
-                        'user_id' => $user_login->userPoint->user_id,
-                        'point' => $user_login->userPoint->point,
-                        'created_at' => $user_login->userPoint->created_at,
-                        'updated_at' => $user_login->userPoint->updated_at,
-                    ] : null,
 
-                    'userPointCounter' => $user_login->userPoint->userPointCounter
-                        ? $user_login->userPoint->userPointCounter->map(function ($counter) {
-                        return [
-                            'id' => $counter->id,
-                            'user_id' => $counter->user_id,
-                            'reward_id' => $counter->reward_id,
-                            'point_import' => $counter->point_import,
-                            'point_export' => $counter->point_export,
-                            'detail_counter' => $counter->detail_counter,
-                            'created_at' => $counter->created_at,
-                            'updated_at' => $counter->updated_at,
-                        ];
-                    }) : null,
+                // 'userPoint' => $user_login->userPoint ? [
+                //     'id' => $user_login->userPoint->id,
+                //     'user_id' => $user_login->userPoint->user_id,
+                //     'point' => $user_login->userPoint->point,
+                //     'created_at' => $user_login->userPoint->created_at,
+                //     'updated_at' => $user_login->userPoint->updated_at,
+                // ] : null,
+
+                // 'userPointCounter' => $user_login->userPoint && $user_login->userPoint->userPointCounter
+                //     ? $user_login->userPoint->userPointCounter->map(function ($counter) {
+                //         return $counter ? [
+                //             'id' => $counter->id,
+                //             'user_id' => $counter->user_id,
+                //             'reward_id' => $counter->reward_id,
+                //             'point_import' => $counter->point_import,
+                //             'point_export' => $counter->point_export,
+                //             'detail_counter' => $counter->detail_counter,
+                //             'created_at' => $counter->created_at,
+                //             'updated_at' => $counter->updated_at,
+                //         ] : null;
+                //     }) : null,
 
             ];
+
+            // dd($user_login);
 
             return response()->json([
                 'user_login' => $user_login,

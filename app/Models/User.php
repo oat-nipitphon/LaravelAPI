@@ -116,13 +116,13 @@ class User extends Authenticatable
         return $this->HasMany(Post::class);
     }
 
-    public function userFollowersProfile () : HasMany {
-        return $this->HasMany(UserFollowersProfile::class);
-    }
+    // public function userFollowersProfile () : HasMany {
+    //     return $this->HasMany(UserFollowersProfile::class);
+    // }
 
-    public function userFollowersAccount () : HasMany {
-        return $this->HasMany(UserFollowersAccount::class);
-    }
+    // public function userFollowersAccount () : HasMany {
+    //     return $this->HasMany(UserFollowersAccount::class);
+    // }
 
     public function userProfileContact () : HasMany {
         return $this->HasMany(UserProfileContact::class, 'user_id', 'id');

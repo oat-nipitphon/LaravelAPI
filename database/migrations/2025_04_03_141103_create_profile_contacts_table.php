@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_points', function (Blueprint $table) {
+        Schema::create('profile_contacts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->integer('point')->default(0)->nullable();
-            $table->string('point_status')->default('active')->nullable();
+            $table->foreignId('profile_id')->constrained('user_profiles')->onDelete('cascade');
+            $table->string('name')->nullable();
+            $table->string('url')->nullable();
+            $table->binary('icon_data')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_points');
+        Schema::dropIfExists('profile_contacts');
     }
 };
