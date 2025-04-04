@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable();
-            $table->foreignId('type_id')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('type_id')->nullable()->constrained('post_types')->onDelete('cascade');
             $table->string('post_title')->nullable();
             $table->text('post_content')->nullable();
             $table->string('refer')->nullable();

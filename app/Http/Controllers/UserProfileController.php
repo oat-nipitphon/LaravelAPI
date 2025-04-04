@@ -124,10 +124,8 @@ class UserProfileController extends Controller
                 'userLogin',
                 'userStatus',
                 'posts',
-                'userFollowersProfile',
-                'userFollowersAccount',
                 'userPoint',
-                'userPoint.userPointCounter',
+                // 'userPoint.userPointCounter',
             )->findOrFail($id);
 
             $userProfile = [
@@ -157,40 +155,41 @@ class UserProfileController extends Controller
                     ];
                 }),
 
-                'profileContact' => $user->userProfile->ProfileContact->map(function ($row) {
-                    return [
-                        'id' => $row->id,
-                        'profileID' => $row->profile_id,
-                        'name' => $row->name,
-                        'url' => $row->url,
-                        'icon' => $row->icon_data
-                    ];
+                'profileContact' => $user->userProfile?->ProfileContact->map(function ($row) {
+                    return $row ? [
+                        'id' => $row?->id,
+                        'profileID' => $row?->profile_id,
+                        'name' => $row?->name,
+                        'url' => $row?->url,
+                        'icon' => $row?->icon_data
+                    ] : null;
                 }),
 
-                'userPoint' => $user->userPoint ? [
-                    'id' => $user->userPoint->id,
-                    'user_id' => $user->userPoint->user_id,
-                    'point' => $user->userPoint->point,
-                    'created_at' => $user->userPoint->created_at,
-                    'updated_at' => $user->userPoint->updated_at,
+                'userPoint' => $user?->userPoint ? [
+                    'id' => $user?->userPoint->id,
+                    'user_id' => $user?->userPoint->user_id,
+                    'point' => $user?->userPoint->point,
+                    'created_at' => $user?->userPoint->created_at,
+                    'updated_at' => $user?->userPoint->updated_at,
                 ] : null,
 
-                'userPointCounter' => $user->userPoint->userPointCounter ?
-                $user->userPoint->userPointCounter->map(function ($counter) {
-                    return [
-                        'id' => $counter->id,
-                        'user_point_id' => $counter->user_point_id,
-                        'user_id' => $counter->user_id,
-                        'reward_id' => $counter->reward_id,
-                        'point_import' => $counter->point_import,
-                        'point_export' => $counter->point_export,
-                        'detail_counter' => $counter->detail_counter,
-                        'created_at' => $counter->created_at,
-                        'updated_at' => $counter->updated_at,
-                    ];
-                }) : null,
+                // 'userPointCounter' => $user?->userPoint?->userPointCounter->map(function ($counter) {
+                //     return $counter ? [
+                //         'id' => $counter?->id,
+                //         'user_point_id' => $counter?->user_point_id,
+                //         'user_id' => $counter?->user_id,
+                //         'reward_id' => $counter?->reward_id,
+                //         'point_import' => $counter?->point_import,
+                //         'point_export' => $counter?->point_export,
+                //         'detail_counter' => $counter?->detail_counter,
+                //         'created_at' => $counter?->created_at,
+                //         'updated_at' => $counter?->updated_at,
+                //     ] : null;
+                // }),
 
             ];
+
+            // dd($userProfile);
 
             if ($userProfile) {
                 return response()->json([

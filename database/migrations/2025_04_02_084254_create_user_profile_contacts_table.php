@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('user_profile_contacts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('user_contact')->nullable();
             $table->string('contact_link')->nullable();
             $table->string('contact_icon_name')->nullable();

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('reward_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('reward_id')->constrained('rewards')->onDelete('cascade');
+            $table->foreignId('reward_id')->nullable()->constrained('rewards')->onDelete('cascade');
             $table->string('image_path')->nullable();
             $table->string('image_name')->nullable();
             $table->string('image_url')->nullable();

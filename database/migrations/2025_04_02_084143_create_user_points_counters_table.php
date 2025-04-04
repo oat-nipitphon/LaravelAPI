@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('user_points_counters', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable();
-            $table->foreignId('reward_id')->nullable();
-            $table->foreignId('point_status')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('reward_id')->nullable()->constrained('rewards')->onDelete('cascade');
+            $table->string('point_status')->nullable();
             $table->text('detail_counter')->nullable();
             $table->timestamps();
         });

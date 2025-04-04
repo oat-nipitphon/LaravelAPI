@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('user_profile_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('user_image_path')->nullable();
             $table->string('user_image_name')->nullable();
             $table->binary('user_image_data')->nullable();
