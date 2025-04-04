@@ -304,7 +304,7 @@ class PostController extends Controller
                 'refer' => 'nullable|string',
                 'typeID' => 'nullable|integer',
                 'newType' => 'nullable|string',
-                'imageFile' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $type_id = $request->typeID;

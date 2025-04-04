@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -17,7 +18,27 @@ return new class extends Migration
             $table->string('status_name')->nullable();
             $table->timestamps();
         });
+
+        DB::table('user_status')->insert([
+            [
+                'id' => 1,
+                'status_code' => 101,
+                'status_name' => 'admin',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'status_code' => 202,
+                'status_name' => 'user',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ]);
+
     }
+
+
 
     /**
      * Reverse the migrations.
