@@ -10,13 +10,60 @@ use Illuminate\Http\Request;
 class ProfileContactController extends Controller
 {
 
-        /**
+
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $user = User::with([
+            'userProfile',
+            'userProfile.profileContact' // ใช้ชื่อให้ตรงกับที่กำหนดใน Model
+        ])->get()->map(function ($row) {
+            return [
+                'id' => $row->id,
+                'name' => $row->name,
+                'userProfile' => $row->userProfile ? [
+                    'fullName' => $row->userProfile->full_name
+                ] : null,
+                'profileContacts' => $row->userProfile ?
+                    $row->userProfile->profileContact->map(function ($contact) {
+                        return [
+                            'name' => $contact->name,
+                            'url' => $contact->url,
+                            'icon' => $contact->icon_data
+                        ];
+                    }) : [],
+            ];
+        });
+
+        dd($user);
+
+        return response()->json([
+            'message' => "api profile contact success",
+            'user' => $user
+        ], 200);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
+
+    // FUNCTION STORE
+         /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
 
         try {
+
+            dd('function store', $request);
 
             $request->validate([
                 'profileID' => 'required|integer',
@@ -27,6 +74,8 @@ class ProfileContactController extends Controller
             ]);
 
             $contacts = $request->input('contacts', []);
+
+            // dd($contacts);
 
             foreach ($contacts as $index => $contact) {
                 // ***** insert data > 1
@@ -117,48 +166,6 @@ class ProfileContactController extends Controller
             ], 204);
         }
     }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $user = User::with([
-            'userProfile',
-            'userProfile.profileContact' // ใช้ชื่อให้ตรงกับที่กำหนดใน Model
-        ])->get()->map(function ($row) {
-            return [
-                'id' => $row->id,
-                'name' => $row->name,
-                'userProfile' => $row->userProfile ? [
-                    'fullName' => $row->userProfile->full_name
-                ] : null,
-                'profileContacts' => $row->userProfile ?
-                    $row->userProfile->profileContact->map(function ($contact) {
-                        return [
-                            'name' => $contact->name,
-                            'url' => $contact->url,
-                            'icon' => $contact->icon_data
-                        ];
-                    }) : [],
-            ];
-        });
-
-        return response()->json([
-            'message' => "api profile contact success",
-            'user' => $user
-        ], 200);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    // FUNCTION STORE
 
     /**
      * Display the specified resource.

@@ -24,7 +24,8 @@ class PostController extends Controller
     }
 
 
-    public function getTypePost () {
+    public function getTypePost()
+    {
         $postTypes = PostType::all();
         return response()->json([
             'postTypes' => $postTypes,
@@ -152,6 +153,7 @@ class PostController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * Function Create Post
      */
     public function store(Request $request)
     {
@@ -253,14 +255,14 @@ class PostController extends Controller
                     'id' => $post->postType->id,
                     'typeName' => $post->postType->post_type_name,
                 ] : null,
-                'postImage' => $post->postImage->map(function ($image) {
-                    return $image ? [
+                'postImage' => $post->postImage->isNotEmpty() ? $post->postImage->map(function ($image) {
+                    return [
                         'id' => $image->id,
                         'imagePath' => $image->image_path,
                         'imageName' => $image->image_name,
                         'imageData' => $image->image_data,
-                    ] : null;
-                }),
+                    ];
+                }) : null,
             ];
 
 
@@ -291,6 +293,7 @@ class PostController extends Controller
 
     /**
      * Update the specified resource in storage.
+     * Function Update Post
      */
     public function update(Request $request)
     {
@@ -304,7 +307,7 @@ class PostController extends Controller
                 'refer' => 'nullable|string',
                 'typeID' => 'nullable|integer',
                 'newType' => 'nullable|string',
-                'imageFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'imageFile' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             $type_id = $request->typeID;
@@ -318,43 +321,49 @@ class PostController extends Controller
 
             $post = Post::findOrFail($request->postID);
 
-            if ($post && $type_id) {
-
-                $post->update([
-                    'post_title' => $validated['title'],
-                    'post_content' => $validated['content'],
-                    'refer' => $validated['refer'],
-                    'type_id' => $type_id,
-                    'deletetion_status' => "false", // status 0 == false // status 1 == true
-                    'block_status' => "false",
-                    'updated_at' => $this->dateTimeFormatTimeZone(),
-                ]);
-
-                if ($request->hasFile('imageFile')) {
-                    $imageFile = $request->file('imageFile');
-                    $imageData = file_get_contents($imageFile->getRealPath());
-                    $imageDataBase64 = base64_encode($imageData);
-                }
-
-                $postImage = PostImage::where('post_id', $post->id)->first();
-                if ($postImage) {
-                    $postImage->update([
-                        'post_id' => $post->id,
-                        'image_data' => $imageDataBase64,
-                        'updated_at' => $this->dateTimeFormatTimeZone(),
-                    ]);
-                }
-
+            if (!$post) {
                 return response()->json([
-                    'message' => 'Laravel function store successfully.',
-                    'post' => $post,
-                    'imageDataBase64' => $imageDataBase64,
-                ], 201);
-            } else {
-                return response()->json([
-                    'message' => "laravel api store response false"
+                    'message' => "laravel check image file req false"
                 ], 204);
             }
+
+            $post->update([
+                'post_title' => $validated['title'],
+                'post_content' => $validated['content'],
+                'refer' => $validated['refer'],
+                'type_id' => $type_id,
+                'deletetion_status' => "false", // status 0 == false // status 1 == true
+                'block_status' => "false",
+                'updated_at' => $this->dateTimeFormatTimeZone(),
+            ]);
+
+            if ($request->hasFile('imageFile')) {
+                $imageFile = $request->file('imageFile');
+                $imageData = file_get_contents($imageFile->getRealPath());
+                $imageDataBase64 = base64_encode($imageData);
+            }
+
+            $postImage = PostImage::where('post_id', $post->id)->first();
+
+            if ($postImage) {
+                $postImage->update([
+                    'post_id' => $post->id,
+                    'image_data' => $imageDataBase64,
+                    'updated_at' => $this->dateTimeFormatTimeZone(),
+                ]);
+            } else {
+                PostImage::create([
+                    'post_id' => $post->id,
+                    'image_data' => $imageDataBase64,
+                    'created_at' => $this->dateTimeFormatTimeZone(),
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Laravel function store successfully.',
+                'post' => $post,
+                'imageDataBase64' => $imageDataBase64,
+            ], 201);
         } catch (\Exception $error) {
 
             Log::error("Laravel function store error", [
@@ -392,7 +401,6 @@ class PostController extends Controller
             return response()->json([
                 'message' => "Laravel API delete success",
             ], 200);
-
         } catch (\Exception $error) {
 
             Log::error("Laravel function destroy error", [
@@ -421,7 +429,6 @@ class PostController extends Controller
                 'message' => "Posts deleted successfully",
                 'request' => $request
             ], 200);
-
         } catch (\Exception $error) {
             DB::rollBack(); // Rollback ถ้ามีข้อผิดพลาดเกิดขึ้น
             return response()->json([
