@@ -18,6 +18,11 @@ class UserPointCounter extends Model
         'updated_at'
     ];
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
     public function userPoint(): BelongsTo
     {
         return $this->belongsTo(UserPoint::class, 'user_id', 'id');

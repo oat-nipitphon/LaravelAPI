@@ -20,6 +20,8 @@ use App\Http\Controllers\CartItemsController;
 
 Route::middleware(['auth:sanctum'])->get('/user', [AuthController::class, 'index']);
 
+Route::get('/getUserPointCounter', [AuthController::class, 'getUserPointCounter']);
+
 Route::get('/authStore', [AuthController::class, 'index']);
 Route::get('/status_user', [AuthController::class, 'getStatusUser']);
 

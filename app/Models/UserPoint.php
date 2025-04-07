@@ -22,7 +22,7 @@ class UserPoint extends Model
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
-    public function userPointCounter(): HasMany
+    public function userPointCounters(): HasMany
     {
         return $this->hasMany(UserPointCounter::class, 'user_id', 'id');
     }

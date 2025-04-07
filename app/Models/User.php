@@ -81,6 +81,11 @@ class User extends Authenticatable
         return $this->hasOne(UserPoint::class, 'user_id', 'id');
     }
 
+    public function userPointCounter(): HasMany
+    {
+        return $this->hasMany(UserPointCounter::class, 'user_id', 'id');
+    }
+
     public function userImage () : HasMany {
         return $this->HasMany(UserImage::class, 'user_id', 'id');
     }
