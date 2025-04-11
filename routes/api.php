@@ -77,12 +77,18 @@ Route::prefix('/reward')->group(function () {
     Route::get('/show/{id}', [RewardController::class, 'show']);
     Route::put('/update/{id}', [RewardController::class, 'update']);
     Route::delete('/delete/{id}', [RewardController::class, 'destroy']);
+
 })->middleware('auth:sanctum');
 
 Route::prefix('/cartItems')->group(function () {
-    Route::post('userConfirmSelectReward', [CartItemsController::class, 'userConfirmSelectReward']);
-})->middleware('auth:sanctum');
+    Route::post('/userConfirmSelectReward', [CartItemsController::class, 'userConfirmSelectReward']);
+    Route::get('/getReportReward/{userID}', [CartItemsController::class, 'getReportReward']);
+})
+->middleware('auth:sanctum');
 
+
+
+// Route Admin Manager
 Route::prefix('/admin')->group(function () {
 
     Route::prefix('/posts')->group(function () {
