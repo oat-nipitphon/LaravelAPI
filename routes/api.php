@@ -87,6 +87,11 @@ Route::prefix('/cartItems')->group(function () {
 ->middleware('auth:sanctum');
 
 
+// Videos
+Route::prefix('/video')->group(function () {
+    // Route::get('');
+})->middleware('auth:sanctum');
+
 
 // Route Admin Manager
 Route::prefix('/admin')->group(function () {

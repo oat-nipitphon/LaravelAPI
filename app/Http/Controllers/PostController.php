@@ -582,6 +582,8 @@ class PostController extends Controller
                 ->where('post_id', $postID)
                 ->first();
 
+            // dd($existingReaction);
+
             if ($existingReaction) {
                 // Toggle reaction
                 if ($existingReaction->pop_status === $popStatusLike) {
