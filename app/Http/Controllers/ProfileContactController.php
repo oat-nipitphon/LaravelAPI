@@ -63,7 +63,7 @@ class ProfileContactController extends Controller
 
         try {
 
-            dd('function store', $request);
+            // dd('function store', $request);
 
             $request->validate([
                 'profileID' => 'required|integer',
@@ -117,54 +117,59 @@ class ProfileContactController extends Controller
 
     public function newContact(Request $request)
     {
-        // รับข้อมูลจาก request
-        $validate = $request->validate([
-            'userID' => 'required|integer',
-            'profileID' => 'required|integer',
-        ]);
 
-        $contacts = $request->input('contacts', []);
+        try {
 
-        $checkNewContact = false;
+            // dd('function store', $request);
 
-        foreach ($contacts as $contact) {
+            $request->validate([
+                'profileID' => 'required|integer',
+                'contacts' => 'required|array|min:1',
+                'contacts.*.name' => 'required|string',
+                'contacts.*.url' => 'required|string',
+                'contacts.*.iconFile' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
 
+            $contacts = $request->input('contacts', []);
 
-            // ตรวจสอบว่า contact นี้มีไฟล์ภาพหรือไม่
-            if (isset($contact['imageIcon'])) {
-                // ถ้ามีไฟล์ภาพให้ทำการอัปโหลดและแปลงเป็น base64
-                $image = $contact['imageIcon'];
-                $iconData = file_get_contents($image->getRealPath());
-                $iconDatabase64 = base64_encode($iconData);
+            // dd($contacts);
 
-                // สร้าง contact ใหม่
-                $profileContact = ProfileContact::create([
-                    'profile_id' => $validate['profileID'],
-                    'name' => $contact['name'],
-                    'url' => $contact['url'],
-                    'icon_data' => $iconDatabase64
-                ]);
+            foreach ($contacts as $index => $contact) {
+                // ***** insert data > 1
+                // ***** creact model inside loop
+                $profileContact = new ProfileContact();
 
-                // อัปเดต icon data ใน contact
-                // $profileContact->update([
+                if ($request->hasFile("contacts.{$index}.iconFile")) {
+                    $fileIcon = $request->file("contacts.{$index}.iconFile");
+                    $iconData = file_get_contents($fileIcon->getRealPath());
+                    $iconDatabase64 = base64_encode($iconData);
+                } else {
+                    $iconDatabase64 = null;
+                }
 
-                // ]);
+                $profileContact->profile_id = $request->profileID;
+                $profileContact->name = $contact['name'];
+                $profileContact->url = $contact['url'];
+                $profileContact->icon_data = $iconDatabase64;
+                $profileContact->save();
             }
 
-            // อัปเดตสถานะว่าได้บันทึก contact แล้ว
-            $checkNewContact = true;
+            if (!$profileContact->id) {
+                return response()->json([
+                    'message' => "Failed to save profile contact",
+                ], 500);
+            }
+
+            return response()->json([
+                'message' => "api save profile contact success",
+            ], 201);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => "api save contact profile function store error" . $error->getMessage()
+            ]);
         }
 
-        // ตรวจสอบว่าได้บันทึกข้อมูลหรือไม่
-        if ($checkNewContact) {
-            return response()->json([
-                'message' => "New contact successfully added"
-            ], 201);
-        } else {
-            return response()->json([
-                'message' => "Failed to add new contact"
-            ], 204);
-        }
     }
 
     /**

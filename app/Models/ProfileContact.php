@@ -12,9 +12,10 @@ class ProfileContact extends Model
 
     use HasFactory;
 
-    protected $table = 'profile_contacts';
+    protected $table = 'user_profile_contacts';
     protected $fillable = [
         'id',
+        'user_id',
         'profile_id',
         'name',
         'url',
