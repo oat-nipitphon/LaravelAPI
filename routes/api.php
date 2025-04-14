@@ -83,6 +83,7 @@ Route::prefix('/reward')->group(function () {
 Route::prefix('/cartItems')->group(function () {
     Route::post('/userConfirmSelectReward', [CartItemsController::class, 'userConfirmSelectReward']);
     Route::get('/getReportReward/{userID}', [CartItemsController::class, 'getReportReward']);
+    Route::post('/cancel_reward/{rewardID}{userID}', [CartItemsController::class, 'cancelReward']);
 })
 ->middleware('auth:sanctum');
 

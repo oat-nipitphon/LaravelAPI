@@ -106,11 +106,40 @@ class CartItemsController extends Controller
     {
         try {
             // ดึงข้อมูลเฉพาะผู้ใช้ พร้อม relation
-            $user = User::with('userPoint', 'userPointCounter')->findOrFail($userID);
+            $user = User::with('userPoint', 'userPointCounter', 'userPointCounter.reward')->findOrFail($userID);
+
+            $userPointCounters = [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'user_username' => $user->username,
+                'user_point' => $user->userPoint->point,
+                'counters' => $user->userPointCounter?->map(function ($counter) {
+                    return $counter ? [
+                        'id' => $counter->id,
+                        'user_id' => $counter->user_id,
+                        'detail' => $counter->detail_counter,
+                        'created_at' => $counter->created_at,
+                        'updated_at' => $counter->updated_at,
+                        'rewards' => $counter->reward->map(function ($reward) {
+                            return $reward ? [
+                                'id' => $reward->id,
+                                'point' => $reward->point,
+                                'images' => $reward->rewardImage->map(function ($image) {
+                                    return $image ? [
+                                        'id' => $image->id,
+                                        'image_data' => $image->image_data,
+                                    ] : null;
+                                }),
+                            ] : null;
+                        }),
+                    ] : null;
+                }),
+            ];
 
             return response()->json([
                 'message' => 'Laravel API get report reward success.',
-                'userPointCounter' => $user
+                // 'userPointCounter' => $user,
+                'userPointCounter' => $userPointCounters,
             ], 200);
 
         } catch (\Exception $error) {
@@ -121,5 +150,22 @@ class CartItemsController extends Controller
         }
     }
 
+    public function cancelReward (string $rewardID, string $userID) {
+        try {
+            $userPointCounter = UserPointCounter::where('reward_id', $rewardID, 'user_id', $userID)->first();
+            // dd($userPointCounter);
+
+            return response()->json([
+                'message' => 'laravelapi function cancel reward success',
+                'cancel' => $userPointCounter,
+            ], 200);
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => 'function cancel reward error',
+                'error' => $$error->getMessage(),
+            ], 404);
+        }
+    }
 
 }
