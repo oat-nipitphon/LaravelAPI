@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
+
+use App\Models\User;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileContactController;
@@ -26,6 +28,16 @@ Route::get('/authStore', [AuthController::class, 'index']);
 Route::get('/status_user', [AuthController::class, 'getStatusUser']);
 
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/check-email', function (Request $request) {
+    $exists = User::where('email', $request->email)->exists();
+    return response()->json(['exists' => $exists]);
+});
+
+Route::post('/check-username', function (Request $request) {
+    $exists = User::where('username', $request->username)->exists();
+    return response()->json(['exists' => $exists]);
+});
+
 Route::post('/forget_your_password', [AuthController::class, 'forgetYourPassword']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
