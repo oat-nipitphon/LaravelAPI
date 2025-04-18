@@ -450,6 +450,43 @@ class PostController extends Controller
         }
     }
 
+    public function recoverSelected(Request $request)
+    {
+        try {
+
+            $ids = $request->ids;
+
+            if (!is_array($ids) || empty($ids)) {
+                return response()->json([
+                    'message' => 'laravelapi recover ids false'
+                ], 400);
+            }
+
+
+            $recoverPosts = Post::whereIn('id', $ids)->get();
+
+            foreach ($recoverPosts as $post) {
+                $post->update([
+                    'deletetion_status' => 'false',
+                    'updated_at' => now()
+                ]);
+            }
+
+
+            return response()->json([
+                'message' => 'laravelapi updated recover success',
+                'recoverPosts' => $recoverPosts
+            ], 200);
+
+
+        } catch (\Exception $error) {
+            return response()->json([
+                'message' => 'laravel api function recover selected error',
+                'error' => $error->getMessage()
+            ]);
+        }
+    }
+
     public function deleteSelected(Request $request)
     {
         try {

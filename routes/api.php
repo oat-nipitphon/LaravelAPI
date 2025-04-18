@@ -70,6 +70,7 @@ Route::prefix('')->group(function () {
     Route::apiResource('/posts', PostController::class);
     Route::post('/posts/store/{postID}', [PostController::class, 'postStore']);
     Route::post('/posts/update', [PostController::class, 'update']);
+    Route::post('/posts/recoverSelected', [PostController::class, 'recoverSelected']);
     Route::post('/posts/deleteSelected', [PostController::class, 'deleteSelected']);
     Route::post('/posts/report_recover/{userID}', [PostController::class, 'recoverGetPost']);
     Route::post('/posts/recover/{postID}', [PostController::class, 'recoverPost']);
