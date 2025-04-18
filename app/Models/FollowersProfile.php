@@ -10,13 +10,19 @@ class FollowersProfile extends Model
 
     protected $table = "followers_profiles";
     protected $fillable = [
-        'id',
         'profile_user_id',
-        'followers_user_id'
+        'followers_user_id',
+        'status_followers',
     ];
 
-    public function user () : BelongsTo {
-        return $this->belongsTo(User::class, 'id', 'user_id');
+    public function profile(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'profile_user_id', 'id');
+    }
+
+    public function follower(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'followers_user_id', 'id');
     }
 
 }

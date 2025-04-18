@@ -28,12 +28,12 @@ Route::get('/authStore', [AuthController::class, 'index']);
 Route::get('/status_user', [AuthController::class, 'getStatusUser']);
 
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/check-email', function (Request $request) {
+Route::post('/register/check_email', function (Request $request) {
     $exists = User::where('email', $request->email)->exists();
     return response()->json(['exists' => $exists]);
 });
 
-Route::post('/check-username', function (Request $request) {
+Route::post('/register/check_username', function (Request $request) {
     $exists = User::where('username', $request->username)->exists();
     return response()->json(['exists' => $exists]);
 });
@@ -47,7 +47,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::apiResource('/users', UserController::class)->middleware('auth:sanctum');
 Route::post('/update/user', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
 
-
 // Profile
 Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
 Route::post('/update/profile', [UserProfileController::class, 'updateProfile'])->middleware('auth:sanctum');
@@ -55,6 +54,8 @@ Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'u
 Route::post('/uploadImageUserProfile', [UserProfileImageController::class, 'uploadImageUserProfile'])->middleware('auth:sanctum');
 Route::post('/user/upload/image', [UserImageController::class, 'uploadUserImage'])->middleware('auth:sanctum');
 
+Route::post('/followers/{postUserID}/{authUserID}', [UserController::class, 'followersProfile'])->middleware('auth:sanctum');
+Route::post('/pop_like/{postUserID}/{authUserID}', [UserController::class, 'popLikeProfile'])->middleware('auth:sanctum');
 
 // Contact
 Route::prefix('/profile')->group(function () {
@@ -89,15 +90,13 @@ Route::prefix('/reward')->group(function () {
     Route::get('/show/{id}', [RewardController::class, 'show']);
     Route::put('/update/{id}', [RewardController::class, 'update']);
     Route::delete('/delete/{id}', [RewardController::class, 'destroy']);
-
 })->middleware('auth:sanctum');
 
 Route::prefix('/cartItems')->group(function () {
     Route::post('/userConfirmSelectReward', [CartItemsController::class, 'userConfirmSelectReward']);
     Route::get('/getReportReward/{userID}', [CartItemsController::class, 'getReportReward']);
     Route::post('/cancel_reward/{rewardID}{userID}', [CartItemsController::class, 'cancelReward']);
-})
-->middleware('auth:sanctum');
+})->middleware('auth:sanctum');
 
 
 // Videos

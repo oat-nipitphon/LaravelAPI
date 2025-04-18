@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FollowersProfile;
+use App\Models\PopularityProfile;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Carbon\Carbon;
@@ -28,23 +30,85 @@ class UserController extends Controller
         }
     }
 
-    public function popProfile(Request $req, user $user, string $userID)
+    public function followersProfile(Request $request, string $postUserID, string $authUserID)
     {
         try {
+            $checkFollowers = FollowersProfile::where('profile_user_id', $postUserID)
+                ->where('followers_user_id', $authUserID)
+                ->first();
+            $check = '';
+            if ($checkFollowers) {
+                if ($checkFollowers->status_followers === 'true') {
+                    $checkFollowers->delete();
+                    $check = 'false';
+                } else {
+                    $checkFollowers->update([
+                        'status_followers' => 'true',
+                        'updated_at' => now(),
+                    ]);
+                    $check = 'true';
+                }
+            } else {
+                FollowersProfile::create([
+                    'profile_user_id' => $postUserID,
+                    'followers_user_id' => $authUserID,
+                    'status_followers' => 'true',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $check = 'true';
+            }
+
+            return response()->json([
+                'message' => 'laravel api followers profile success.',
+                'checkFollowers' => $check
+            ], 200);
         } catch (\Exception $error) {
             return response()->json([
-                'message' => "Laravel pop profile function error",
+                'message' => "Laravel followersProfile function error",
                 'error' => $error->getMessage()
             ], 500);
         }
     }
 
-    public function followersAccount(Request $req, user $user, string $userID)
+    public function popLikeProfile(Request $request, string $postUserID, string $authUserID)
     {
         try {
+
+            $checkPopLike = PopularityProfile::where('user_id', $postUserID)
+                ->where('user_id_pop', $authUserID)->first();
+            $check = '';
+
+            if ($checkPopLike) {
+                if ($checkPopLike->status_pop === 'true') {
+                    $checkPopLike->delete();
+                    $check = 'false';
+                } else {
+                    $checkPopLike->update([
+                        'status_pop' => 'true',
+                        'updated_at' => now(),
+                    ]);
+                    $check = 'true';
+                }
+            } else {
+                PopularityProfile::create([
+                    'user_id' => $postUserID,
+                    'user_id_pop' => $authUserID,
+                    'status_pop' => 'true',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $check = 'true';
+            }
+
+            return response()->json([
+                'message' => 'laravel api pop like profile success.',
+                'checkPopLike' => $check
+            ], 200);
+
         } catch (\Exception $error) {
             return response()->json([
-                'message' => "Laravel pop profile function error",
+                'message' => "Laravel popLikeProfile function error",
                 'error' => $error->getMessage()
             ], 500);
         }
@@ -84,7 +148,6 @@ class UserController extends Controller
                     'message' => "update user success.",
                     'user' => $user
                 ], 200);
-
             } else {
                 return response()->json([
                     'message' => "update user false success.",
@@ -111,7 +174,8 @@ class UserController extends Controller
      * Update the specified resource in storage.
      */
 
-    public function updateUser (Request $request) {
+    public function updateUser(Request $request)
+    {
         try {
 
             $request->validate([
@@ -143,7 +207,6 @@ class UserController extends Controller
                 'message' => "api update user successfully",
                 'user' => $user
             ], 200);
-
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "api user controller function update user error" . $error->getMessage()

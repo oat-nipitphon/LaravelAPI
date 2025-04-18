@@ -7,12 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
+use App\Models\UserPoint;
 use App\Models\Post;
 use App\Models\PostType;
 use App\Models\PostImage;
 use App\Models\PostDeletetion;
 use App\Models\PostPopularity;
 
+use function Symfony\Component\Clock\now;
 
 class PostController extends Controller
 {
@@ -49,6 +51,8 @@ class PostController extends Controller
                 'user.userProfile',
                 'user.userProfileContact',
                 'user.userProfileImage',
+                'user.followersProfiles',
+                'user.popularityProfiles'
             ])
                 ->where('deletetion_status', 'false')
                 ->where('block_status', 'false')
@@ -62,7 +66,7 @@ class PostController extends Controller
                         'content' => $post->post_content,
                         'userID' => $post->user_id,
                         'createdAt' => $post->created_at,
-                        'updatedAtt' => $post->updated_at,
+                        'updatedAt' => $post->updated_at,
 
                         'postType' => $post->postType ? [
                             'name' => $post->postType->post_type_name,
@@ -123,6 +127,28 @@ class PostController extends Controller
                             ] : null;
                         }),
 
+                        'userFollowersProfile' => $post->user->followersProfiles->map(function ($row) {
+                            return $row ? [
+                                'id' => $row->id,
+                                'profile_user_id' => $row->profile_user_id,
+                                'followers_user_id' => $row->followers_user_id,
+                                'status_followers' => $row->status_followers,
+                                'created_at' => $row->created_at,
+                                'updated_at' => $row->updated_at
+                            ] : null;
+                        }),
+
+                        'userPopularityProfiles' => $post->user->popularityProfiles->map(function ($row) {
+                            return $row ? [
+                                'id' => $row->id,
+                                'user_id' => $row->user_id,
+                                'user_id_pop' => $row->user_id_pop,
+                                'status_pop' => $row->status_pop,
+                                'created_at' => $row->created_at,
+                                'updated_at' => $row->updated_at,
+                            ] : null;
+                        }),
+
                     ] : null;
                 });
 
@@ -173,7 +199,7 @@ class PostController extends Controller
             if (!empty($request->newType)) {
                 $postType = PostType::create([
                     'post_type_name' => $request->newType,
-                    'created_at' => $this->dateTimeFormatTimeZone()
+                    'created_at' => now()
                 ]);
                 $type_id = $postType->id;
             }
@@ -187,29 +213,38 @@ class PostController extends Controller
                     'user_id' => $validated['userID'],
                     'deletetion_status' => "false", // status 0 == false // status 1 == true
                     'block_status' => "false",
-                    'created_at' => $this->dateTimeFormatTimeZone(),
+                    'created_at' => now(),
+                    'created_at' => now(),
                 ]);
+            }
 
-                if ($request->file('imageFile')) {
+            $postImage = null;
 
-                    $imageFile = $request->file('imageFile');
-                    $imageData = file_get_contents($imageFile->getRealPath());
-                    $imageDataBase64 = base64_encode($imageData);
+            if ($request->file('imageFile')) {
+                $imageFile = $request->file('imageFile');
+                $imageData = file_get_contents($imageFile->getRealPath());
+                $imageDataBase64 = base64_encode($imageData);
 
-                    $postImage = PostImage::create([
-                        'post_id' => $post->id,
-                        'image_data' => $imageDataBase64,
-                        'created_at' => $this->dateTimeFormatTimeZone(),
-                    ]);
-                }
+                $postImage = PostImage::create([
+                    'post_id' => $post->id,
+                    'image_data' => $imageDataBase64,
+                    'created_at' => now(),
+                ]);
+            }
 
-                if ($post && $postImage) {
-                    return response()->json([
-                        'message' => 'Laravel function store successfully.',
-                        'post' => $post,
-                        'imageDataBase64' => $imageDataBase64,
-                    ], 201);
-                }
+            if ($post) {
+                // เก็บ point ให้แน่ใจว่าไม่ขึ้นกับ postImage
+                $userPoint = UserPoint::firstOrCreate(
+                    ['user_id' => $validated['userID']],
+                    ['point' => 0]
+                );
+                $userPoint->increment('point', 100);
+
+                return response()->json([
+                    'message' => 'Laravel function store successfully.',
+                    'post' => $post,
+                    'imageDataBase64' => $imageDataBase64 ?? null,
+                ], 201);
             }
 
             return response()->json([
@@ -314,7 +349,7 @@ class PostController extends Controller
             if (!empty($request->newType)) {
                 $postType = PostType::create([
                     'post_type_name' => $request->newType,
-                    'created_at' => $this->dateTimeFormatTimeZone()
+                    'created_at' => now()
                 ]);
                 $type_id = $postType->id;
             }
@@ -334,7 +369,7 @@ class PostController extends Controller
                 'type_id' => $type_id,
                 'deletetion_status' => "false", // status 0 == false // status 1 == true
                 'block_status' => "false",
-                'updated_at' => $this->dateTimeFormatTimeZone(),
+                'updated_at' => now(),
             ]);
 
             if ($request->hasFile('imageFile')) {
@@ -349,13 +384,13 @@ class PostController extends Controller
                 $postImage->update([
                     'post_id' => $post->id,
                     'image_data' => $imageDataBase64,
-                    'updated_at' => $this->dateTimeFormatTimeZone(),
+                    'updated_at' => now(),
                 ]);
             } else {
                 PostImage::create([
                     'post_id' => $post->id,
                     'image_data' => $imageDataBase64,
-                    'created_at' => $this->dateTimeFormatTimeZone(),
+                    'created_at' => now(),
                 ]);
             }
 
@@ -603,6 +638,9 @@ class PostController extends Controller
             $updatedReactions = PostPopularity::where('post_id', $postID)->get();
 
             if ($updatedReactions) {
+
+
+
                 return response()->json([
                     'message' => "Laravel function postPopLike successfully.",
                     'updatedReactions' => $updatedReactions
