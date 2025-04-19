@@ -150,15 +150,24 @@ class CartItemsController extends Controller
         }
     }
 
-    public function cancelReward (string $rewardID, string $userID) {
+    public function cancelReward (string $itemID) {
         try {
-            $userPointCounter = UserPointCounter::where('reward_id', $rewardID, 'user_id', $userID)->first();
-            // dd($userPointCounter);
+
+            $cancelReward = UserPointCounter::findOrFail($itemID);
+
+            if (empty($cancelReward)) {
+                return response()->json([
+                    'message' => 'laravelapi reward false',
+                    'itemID' => $itemID
+                ], 404);
+            }
+
+            $cancelReward->delete();
+
 
             return response()->json([
-                'message' => 'laravelapi function cancel reward success',
-                'cancel' => $userPointCounter,
-            ], 200);
+                'message' => 'laravelapi function cancel reward success'
+            ], 201);
 
         } catch (\Exception $error) {
             return response()->json([
