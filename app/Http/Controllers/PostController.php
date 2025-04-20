@@ -435,6 +435,7 @@ class PostController extends Controller
 
             return response()->json([
                 'message' => "Laravel API delete success",
+                'postID' => $post->id,
             ], 200);
         } catch (\Exception $error) {
 
@@ -477,8 +478,6 @@ class PostController extends Controller
                 'message' => 'laravelapi updated recover success',
                 'recoverPosts' => $recoverPosts
             ], 200);
-
-
         } catch (\Exception $error) {
             return response()->json([
                 'message' => 'laravel api function recover selected error',
@@ -513,46 +512,43 @@ class PostController extends Controller
     {
         try {
 
-            if ($postID) {
-                $post = Post::findOrFail($postID);
+            $post = Post::findOrFail($postID);
 
-                $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
+            $dateTime = Carbon::now('Asia/Bangkok')->format('Y-m-d H:i:s');
 
-                if ($post) {
+            if (!$post) {
+                return response()->json([
+                    'message' => "Post function destroy response false !!",
+                    'post' => 'id' . $postID,
+                ], 404);
+            }
 
-                    $post->update([
-                        'deletetion_status' => 'true',
-                    ]);
+            $post->update([
+                'deletetion_status' => 'true',
+            ]);
 
-                    $postDeletetion = PostDeletetion::create(
-                        [
-                            'post_id' => $post->id,
-                            'date_time_delete' => $dateTime,
-                            'deletetion_status' => 'true',
-                        ]
-                    );
+            $postDeletetion = PostDeletetion::create(
+                [
+                    'post_id' => $post->id,
+                    'date_time_delete' => $dateTime,
+                    'deletetion_status' => 'true',
+                ]
+            );
 
-                    if ($postDeletetion) {
-
-                        return response()->json([
-                            'message' => "Post function destroy successfully.",
-                            'postDeletetion' => $postDeletetion
-                        ], 200);
-                    } else {
-                        dd($postDeletetion);
-                    }
-                } else {
-                    dd($post);
-                }
-            } else {
-                dd($postID);
+            if (!$postDeletetion) {
+                return response()->json([
+                    'message' => "Post function destroy response false !!",
+                    'post' => $post,
+                    'postDeletetion' => 'id' . $postDeletetion,
+                ], 404);
             }
 
             return response()->json([
                 'message' => "Post function destroy response false !!",
-                'id' => $postID,
                 'post' => $post
-            ], 204);
+            ], 201);
+
+
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "Laravel function postStore error " . $error->getMessage()

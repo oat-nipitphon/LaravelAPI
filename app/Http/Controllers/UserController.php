@@ -37,6 +37,7 @@ class UserController extends Controller
                 ->where('followers_user_id', $authUserID)
                 ->first();
             $check = '';
+
             if ($checkFollowers) {
                 if ($checkFollowers->status_followers === 'true') {
                     $checkFollowers->delete();
@@ -63,6 +64,7 @@ class UserController extends Controller
                 'message' => 'laravel api followers profile success.',
                 'checkFollowers' => $check
             ], 200);
+
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "Laravel followersProfile function error",
