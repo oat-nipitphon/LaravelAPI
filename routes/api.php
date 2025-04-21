@@ -139,7 +139,4 @@ Route::prefix('/admin')->group(function () {
         Route::apiResource('/manager', AdminManagerRewardController::class);
     });
 
-
-
-
 })->middleware('auth:sanctum');
