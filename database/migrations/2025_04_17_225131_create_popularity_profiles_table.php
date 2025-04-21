@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('popularity_profiles', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable();
+            $table->foreignId('user_id_pop')->nullable();
+            $table->string('status_pop')->nullable();
             $table->timestamps();
         });
     }

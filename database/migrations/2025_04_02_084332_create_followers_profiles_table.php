@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('followers_profiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('followers_profile_id')->nullable()->constrained('user_profiles')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('profile_user_id')->nullable();
+            $table->foreignId('followers_user_id')->nullable();
+            $table->string('status_followers')->nullable();
             $table->timestamps();
         });
     }
