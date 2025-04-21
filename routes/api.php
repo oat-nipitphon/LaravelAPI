@@ -14,6 +14,7 @@ use App\Http\Controllers\UserImageController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\UserProfileImageController;
 use App\Http\Controllers\AdminManagerPostController;
+use App\Http\Controllers\AdminManagerRewardController;
 use App\Http\Controllers\AdminManagerUserProfileController;
 use App\Http\Controllers\RewardController;
 use App\Http\Controllers\CartItemsController;
@@ -133,5 +134,12 @@ Route::prefix('/admin')->group(function () {
                 'destroy'
             ]);
     });
+
+    Route::prefix('/rewards')->group(function () {
+        Route::apiResource('/manager', AdminManagerRewardController::class);
+    });
+
+
+
 
 })->middleware('auth:sanctum');
