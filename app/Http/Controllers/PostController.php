@@ -112,7 +112,7 @@ class PostController extends Controller
                         'userImage' => $post->user->userImage->map(function ($image) {
                             return $image ? [
                                 'id' => $image->id,
-                                'imageData' => $image->image_data
+                                'imageData' => $image->image_data ? $image->image_data : 'null'
                             ] : null;
                         }),
 

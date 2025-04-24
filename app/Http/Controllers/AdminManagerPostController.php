@@ -63,7 +63,7 @@ class AdminManagerPostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(AdminManagerPost $adminManagerPost, string $postID)
+    public function show(string $postID)
     {
         try {
 
@@ -81,7 +81,7 @@ class AdminManagerPostController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, AdminManagerPost $adminManagerPost, string $postID)
+    public function update(Request $request, string $postID)
     {
         // try {
 
@@ -108,31 +108,46 @@ class AdminManagerPostController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(AdminManagerPost $adminManagerPost, string $postID)
+    public function destroy(string $postID)
     {
         try {
-            DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
+
+            DB::beginTransaction();
+
 
             $post = Post::findOrFail($postID);
+            $post->delete();
 
-            if ($post) {
-                PostImage::where('post_id', $postID)->delete();
-                PostPopularity::where('post_id', $postID)->delete();
-                PostDeletetion::where('post_id', $postID)->delete();
-                $post->delete();
-            }
-
-            DB::commit(); // บันทึกการเปลี่ยนแปลง
+            DB::commit();
 
             return response()->json([
-                'message' => "Laravel API delete success",
+                'message' => 'api delete post success'
             ], 200);
-        } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack(); // ย้อนกลับการเปลี่ยนแปลงหากมีข้อผิดพลาดเกี่ยวกับ Database
 
-            return response()->json([
-                'message' => "Database error: " . $e->getMessage()
-            ], 500);
+        //     DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
+
+        //     $post = Post::findOrFail($postID);
+
+        //     if ($post) {
+        //         PostImage::where('post_id', $postID)->delete();
+        //         PostPopularity::where('post_id', $postID)->delete();
+        //         PostDeletetion::where('post_id', $postID)->delete();
+        //         $post->delete();
+        //     }
+
+        //     DB::commit(); // บันทึกการเปลี่ยนแปลง
+
+        //     return response()->json([
+        //         'message' => "Laravel API delete success",
+        //     ], 200);
+        // } catch (\Illuminate\Database\QueryException $e) {
+        //     DB::rollBack(); // ย้อนกลับการเปลี่ยนแปลงหากมีข้อผิดพลาดเกี่ยวกับ Database
+
+        //     return response()->json([
+        //         'message' => "Database error: " . $e->getMessage()
+        //     ], 500);
+
+
         } catch (\Exception $error) {
             DB::rollBack(); // ย้อนกลับการเปลี่ยนแปลงหากมีข้อผิดพลาดอื่น ๆ
 

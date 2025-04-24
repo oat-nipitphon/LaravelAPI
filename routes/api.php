@@ -137,6 +137,8 @@ Route::prefix('/admin')->group(function () {
 
     Route::prefix('/rewards')->group(function () {
         Route::apiResource('/manager', AdminManagerRewardController::class);
+        Route::post('/updateStatusReward/{rewardID}', [AdminManagerRewardController::class, 'updateStatusReward']);
     });
+
 
 })->middleware('auth:sanctum');
