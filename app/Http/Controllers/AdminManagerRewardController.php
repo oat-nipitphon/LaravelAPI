@@ -99,14 +99,40 @@ class AdminManagerRewardController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $rewardID)
     {
         try {
 
+            $validated = $request->validate([
+                'id' => 'required|integer',
+                'name' => 'required|string',
+                'point' => 'required|integer',
+                'amount' => 'required|integer',
+                'imageFile' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $reward = Reward::findOrFail($rewardID);
+
+            if (empty($reward)) {
+                return response()->json([
+                    'message' => 'laravel api request false',
+                    'reward' => $rewardID
+                ], 404);
+            }
+
+            $reward->update([
+                'name' => $validated['name'],
+                'point' => $validated['point'],
+                'amount' => $validated['amount'],
+                'updated_at' => now()
+            ]);
 
             return response()->json([
-                'message' => ''
+                'message' => 'laravel api update reward success',
+                'reward' => $reward,
             ], 200);
+
+
         } catch (\Exception $error) {
 
             Log::error("api function update", [
