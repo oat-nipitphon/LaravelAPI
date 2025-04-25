@@ -45,28 +45,37 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 
-// User
-Route::apiResource('/users', UserController::class)->middleware('auth:sanctum');
-Route::post('/update/user', [UserController::class, 'updateUser'])->middleware('auth:sanctum');
+Route::prefix('')->group(function () {
+    // ********************************* Users ************************************************
+Route::apiResource('/users', UserController::class);
+Route::post('/update/user', [UserController::class, 'updateUser']);
 
-// Profile
-Route::apiResource('/user_profiles', UserProfileController::class)->middleware('auth:sanctum');
-Route::post('/update/profile', [UserProfileController::class, 'updateProfile'])->middleware('auth:sanctum');
-Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'uploadImageProfile'])->middleware('auth:sanctum');
-Route::post('/uploadImageUserProfile', [UserProfileImageController::class, 'uploadImageUserProfile'])->middleware('auth:sanctum');
-Route::post('/user/upload/image', [UserImageController::class, 'uploadUserImage'])->middleware('auth:sanctum');
 
-Route::post('/followers/{postUserID}/{authUserID}', [UserController::class, 'followersProfile'])->middleware('auth:sanctum');
-Route::post('/pop_like/{postUserID}/{authUserID}', [UserController::class, 'popLikeProfile'])->middleware('auth:sanctum');
+// ********************************* User Followers and Popularity ************************************************
+Route::post('/followers/{postUserID}/{authUserID}', [UserController::class, 'followersProfile']);
+Route::post('/pop_like/{postUserID}/{authUserID}', [UserController::class, 'popLikeProfile']);
 
-// Contact
+// ********************************* Users Image ************************************************
+Route::post('/user/upload/image', [UserImageController::class, 'uploadUserImage']);
+})->middleware('auth:sanctum');
+
+
+// ********************************* UserProfiles ************************************************
+Route::prefix('')->group(function () {
+    Route::apiResource('/user_profiles', UserProfileController::class);
+    Route::post('/update/profile', [UserProfileController::class, 'updateProfile']);
+    Route::post('/user_profile/upload_image', [UserProfileImageController::class, 'uploadImageProfile']);
+    Route::post('/uploadImageUserProfile', [UserProfileImageController::class, 'uploadImageUserProfile']);
+})->middleware('auth:sanctum');
+
+// ********************************* User Profile Contact ************************************************
 Route::prefix('/profile')->group(function () {
     Route::apiResource('/contacts', ProfileContactController::class);
     Route::post('/newContacts', [ProfileContactController::class, 'newContact']);
 })->middleware('auth:sanctum');
 
 
-// Posts
+// ********************************* Posts ************************************************
 Route::prefix('')->group(function () {
     Route::get('/postTypes', [PostController::class, 'getTypePost']);
     Route::apiResource('/posts', PostController::class);
@@ -79,14 +88,14 @@ Route::prefix('')->group(function () {
 })->middleware('auth:sanctum');
 
 
-// Post Popularity
+// ********************************* Post Followers and Popularity *********************************
 Route::prefix('/posts/popularity')->group(function () {
     Route::post('/{userID}/{postID}/{popStatusLike}', [PostController::class, 'postPopLike']);
     Route::post('/{userID}/{postID}/{popStatusDisLike}', [PostController::class, 'postPopDisLike']);
 })->middleware('auth:sanctum');
 
 
-// Reward
+// ********************************* Reward *********************************
 Route::prefix('/reward')->group(function () {
     Route::get('/getRewards', [RewardController::class, 'index']);
     Route::post('/newRewards', [RewardController::class, 'store']);
@@ -95,6 +104,8 @@ Route::prefix('/reward')->group(function () {
     Route::delete('/delete/{id}', [RewardController::class, 'destroy']);
 })->middleware('auth:sanctum');
 
+
+// ********************************* Cart items Reward *********************************
 Route::prefix('/cartItems')->group(function () {
     Route::post('/userConfirmSelectReward', [CartItemsController::class, 'userConfirmSelectReward']);
     Route::get('/getReportReward/{userID}', [CartItemsController::class, 'getReportReward']);
@@ -102,15 +113,18 @@ Route::prefix('/cartItems')->group(function () {
 })->middleware('auth:sanctum');
 
 
-// Videos
+
+// ********************************* Videos *********************************
 Route::prefix('/video')->group(function () {
     // Route::get('');
 })->middleware('auth:sanctum');
 
 
-// Route Admin Manager
+// ********************************* Admin Manager *********************************
 Route::prefix('/admin')->group(function () {
 
+
+    // ********************************* Admin Post *********************************
     Route::prefix('/posts')->group(function () {
         Route::apiResource('/manager', AdminManagerPostController::class)
             ->only([
@@ -124,6 +138,8 @@ Route::prefix('/admin')->group(function () {
         Route::post('/blockOrUnBlock/{postID}/{blockStatus}', [AdminManagerPostController::class, 'blockOrUnBlockPost']);
     });
 
+
+    // ********************************* Admin User Profile *********************************
     Route::prefix('/userProfiles')->group(function () {
         Route::apiResource('/manager', AdminManagerUserProfileController::class)
             ->only([
@@ -136,6 +152,7 @@ Route::prefix('/admin')->group(function () {
             ]);
     });
 
+    // ********************************* Admin Reward *********************************
     Route::prefix('/rewards')->group(function () {
         Route::apiResource('/manager', AdminManagerRewardController::class);
         Route::post('/updateStatusReward/{rewardID}', [AdminManagerRewardController::class, 'updateStatusReward']);
