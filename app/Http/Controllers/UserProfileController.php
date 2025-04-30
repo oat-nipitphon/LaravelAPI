@@ -148,22 +148,24 @@ class UserProfileController extends Controller
                     'birthDay' => $user->userProfile->birth_day,
                 ] : null,
 
-                'userImage' => $user->userImage->map(function ($image) {
+                'userImage' => $user?->userImage ?
+                $user?->userImage->map(function ($image) {
                     return [
                         'id' => $image->id,
                         'imageData' => $image->image_data,
                     ];
-                }),
+                }) : [],
 
-                'profileContact' => $user->userProfile?->ProfileContact->map(function ($row) {
-                    return $row ? [
+                'profileContact' => $user->userProfile?->ProfileContact ?
+                $user->userProfile?->ProfileContact->map(function ($row) {
+                    return [
                         'id' => $row?->id,
                         'profileID' => $row?->profile_id,
                         'name' => $row?->name,
                         'url' => $row?->url,
                         'icon' => $row?->icon_data
-                    ] : null;
-                }),
+                    ];
+                }) : [],
 
                 'userPoint' => $user?->userPoint ? [
                     'id' => $user?->userPoint->id,
@@ -171,37 +173,39 @@ class UserProfileController extends Controller
                     'point' => $user?->userPoint->point,
                     'created_at' => $user?->userPoint->created_at,
                     'updated_at' => $user?->userPoint->updated_at,
-                ] : null,
+                ] : [],
 
-                // 'userPointCounter' => $user?->userPoint?->userPointCounter->map(function ($counter) {
-                //     return $counter ? [
-                //         'id' => $counter?->id,
-                //         'user_point_id' => $counter?->user_point_id,
-                //         'user_id' => $counter?->user_id,
-                //         'reward_id' => $counter?->reward_id,
-                //         'point_import' => $counter?->point_import,
-                //         'point_export' => $counter?->point_export,
-                //         'detail_counter' => $counter?->detail_counter,
-                //         'created_at' => $counter?->created_at,
-                //         'updated_at' => $counter?->updated_at,
-                //     ] : null;
-                // }),
+                'userPointCounter' => $user?->userPoint?->userPointCounter ?
+                $user?->userPoint?->userPointCounter->map(function ($counter) {
+                    return [
+                        'id' => $counter?->id,
+                        'user_point_id' => $counter?->user_point_id,
+                        'user_id' => $counter?->user_id,
+                        'reward_id' => $counter?->reward_id,
+                        'point_import' => $counter?->point_import,
+                        'point_export' => $counter?->point_export,
+                        'detail_counter' => $counter?->detail_counter,
+                        'created_at' => $counter?->created_at,
+                        'updated_at' => $counter?->updated_at,
+                    ];
+                }) : [],
 
             ];
 
-            // dd($userProfile);
 
             if ($userProfile) {
                 return response()->json([
                     'message' => "Laravel get user profile detail success",
                     'userProfile' => $userProfile
                 ], 200);
+            } else {
+                return response()->json([
+                    'message' => "laravel get user profile not success.",
+                    'userProfiles' => 'response request false'
+                ], 204);
             }
 
-            return response()->json([
-                'message' => "laravel get user profile not success.",
-                'userProfiles' => $userProfile
-            ], 204);
+
 
         } catch (\Exception $e) {
             return response()->json([

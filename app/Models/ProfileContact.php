@@ -25,7 +25,7 @@ class ProfileContact extends Model
     ];
 
     public function userProfile () : BelongsTo {
-        return $this->belongsTo(UserProfile::class, 'profile_id', 'id');
+        return $this->belongsTo(UserProfile::class, 'user_id', 'id');
     }
 
 }

@@ -31,7 +31,7 @@ class UserProfile extends Model
     }
 
     public function ProfileContact () : HasMany {
-        return $this->HasMany(ProfileContact::class, 'profile_id', 'id');
+        return $this->HasMany(ProfileContact::class, 'user_id', 'id');
     }
 
 }
