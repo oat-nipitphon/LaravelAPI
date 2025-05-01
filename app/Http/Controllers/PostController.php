@@ -72,22 +72,24 @@ class PostController extends Controller
                             'name' => $post->postType->post_type_name,
                         ] : null,
 
-                        'postPopularity' => $post->postPopularity->map(function ($postPop) {
-                            return $postPop ? [
+                        'postPopularity' => $post->postPopularity ?
+                        $post->postPopularity->map(function ($postPop) {
+                            return [
                                 'id' => $postPop->id,
                                 'postID' => $postPop->post_id,
                                 'userID' => $postPop->user_id,
                                 'status' => $postPop->pop_status,
-                            ] : null;
-                        }),
+                            ];
+                        }) : [],
 
-                        'postImage' => $post->postImage->map(function ($image) {
-                            return $image ? [
+                        'postImage' => $post->postImage ?
+                        $post->postImage->map(function ($image) {
+                            return [
                                 'id' => $image->id,
                                 'imageName' => $image->image_name,
                                 'imageData' => $image->image_data,
-                            ] : null;
-                        }),
+                            ];
+                        }) : [],
 
                         'user' => $post->user ? [
                             'id' => $post->user->id,
@@ -95,7 +97,7 @@ class PostController extends Controller
                             'email' => $post->user->email,
                             'username' => $post->user->username,
                             'statusID' => $post->user->status_id
-                        ] : null,
+                        ] : [],
 
                         'userProfile' => $post->user->userProfile ? [
                             'id' => $post->user->userProfile->id,
@@ -107,47 +109,51 @@ class PostController extends Controller
                             'birthDay' => $post->user->userProfile->birth_day,
                             'createdAt' => $post->user->userProfile->created_at,
                             'updatedAt' => $post->user->userProfile->updated_at,
-                        ] : null,
+                        ] : [],
 
-                        'userImage' => $post->user->userImage->map(function ($image) {
-                            return $image ? [
+                        'userImage' => $post->user->userImage ?
+                        $post->user->userImage->map(function ($image) {
+                            return [
                                 'id' => $image->id,
                                 'imageData' => $image->image_data ? $image->image_data : 'null'
-                            ] : null;
-                        }),
+                            ];
+                        }) : [],
 
-                        'userProfileContact' => $post->user->userProfileContact->map(function ($contact) {
-                            return $contact ? [
+                        'userProfileContact' => $post->user->userProfileContact ?
+                        $post->user->userProfileContact->map(function ($contact) {
+                            return [
                                 'id' => $contact->id,
                                 'name' => $contact->contact_name,
                                 'iconName' => $contact->contact_icon_name,
                                 'iconUrl' => $contact->contact_icon_url,
                                 'iconData' => $contact->contact_icon_data ? 'data:image/png;base64,'
                                     . base64_encode($contact->contact_icon_data) : null,
-                            ] : null;
-                        }),
+                            ];
+                        }) : [],
 
-                        'userFollowersProfile' => $post->user->followersProfiles->map(function ($row) {
-                            return $row ? [
+                        'userFollowersProfile' => $post->user->followersProfiles ?
+                        $post->user->followersProfiles->map(function ($row) {
+                            return [
                                 'id' => $row->id,
                                 'profile_user_id' => $row->profile_user_id,
                                 'followers_user_id' => $row->followers_user_id,
                                 'status_followers' => $row->status_followers,
                                 'created_at' => $row->created_at,
                                 'updated_at' => $row->updated_at
-                            ] : null;
-                        }),
+                            ];
+                        }) : [],
 
-                        'userPopularityProfiles' => $post->user->popularityProfiles->map(function ($row) {
-                            return $row ? [
+                        'userPopularityProfiles' => $post->user->popularityProfiles ?
+                        $post->user->popularityProfiles->map(function ($row) {
+                            return [
                                 'id' => $row->id,
                                 'user_id' => $row->user_id,
                                 'user_id_pop' => $row->user_id_pop,
                                 'status_pop' => $row->status_pop,
                                 'created_at' => $row->created_at,
                                 'updated_at' => $row->updated_at,
-                            ] : null;
-                        }),
+                            ];
+                        }) : [],
 
                     ] : null;
                 });

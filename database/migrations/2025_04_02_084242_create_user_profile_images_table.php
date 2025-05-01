@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('user_image_path')->nullable();
             $table->string('user_image_name')->nullable();
-            $table->binary('user_image_data')->nullable();
+            $table->binary('user_image_data')->type('LONGBLOB')->nullable();
             $table->string('user_image_url')->nullable();
             $table->timestamps();
         });

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('image_path')->nullable();
             $table->string('image_name')->nullable();
             $table->string('image_url')->nullable();
-            $table->binary('image_data')->nullable();
+            $table->binary('image_data')->type('LONGBLOB')->nullable();
             $table->timestamps();
         });
     }

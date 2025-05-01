@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('post_popularitys', function (Blueprint $table) {
             $table->id();
             $table->foreignId('post_id')->nullable()->constrained('posts')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('pop_status')->nullable();
             $table->timestamps();
         });
