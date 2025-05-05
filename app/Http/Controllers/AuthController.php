@@ -69,18 +69,6 @@ class AuthController extends Controller
                 'userProfile' => $userProfile
             ], 201);
 
-
-            // Register Success Login Yes ?
-            // $token = $user->createToken($validate['username']);
-            // if (isset($token)) {
-            //     return response()->json([
-            //         'message' => 'api register success',
-            //         'user' => $user,
-            //         'profile' => $userProfile,
-            //         'token' => $token->pla
-            //     ], 201);
-            // }
-
         } catch (\Exception $error) {
             return response()->json([
                 'message' => "backend api function register error -> " . $error->getMessage()
@@ -309,8 +297,6 @@ class AuthController extends Controller
 
 
             ];
-
-            // dd($user_login);
 
             return response()->json([
                 'user_login' => $user_login,

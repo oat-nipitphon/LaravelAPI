@@ -70,42 +70,41 @@ class RewardController extends Controller
                 'imageFile' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
-            $modelReward = Reward::create([
+            $reward = Reward::create([
                 'name' => $validatedData['name'],
                 'point' => $validatedData['point'],
                 'amount' => $validatedData['amount'],
                 'status' => $validatedData['status']
             ]);
 
-            if ($modelReward) {
-
-                if ($request->hasFile('imageFile')) {
-
-                    $imageFile = $request->file('imageFile');
-                    $imageData = file_get_contents($imageFile->getRealPath());
-                    $imageDataBase64 = base64_encode($imageData);
-
-                    $modelRewardImage = RewardImage::create([
-                        'reward_id' => $modelReward->id,
-                        'image_data' => $imageDataBase64,
-                        'created_at' => $this->dateTimeFormatTimeZone(),
-                    ]);
-
-                    if ($modelRewardImage) {
-                        return response()->json([
-                            'message' => 'Reward created successfully',
-                            'reward' => $modelReward,
-                            'image_path' => $imageDataBase64
-                        ], 201);
-                    }
-                }
+            if (empty($reward) && empty($request->file('imageFile'))) {
+                return response()->json([
+                    'message' => 'new reward false',
+                ], 404);
             }
 
+            $imageFile = $request->file('imageFile');
+            $imageData = file_get_contents($imageFile->getRealPath());
+            $imageDataBase64 = base64_encode($imageData);
+
+            $rewardImage = RewardImage::create([
+                'reward_id' => $reward->id,
+                'image_data' => $imageDataBase64,
+                'created_at' => $this->dateTimeFormatTimeZone(),
+            ]);
+
+            if (empty($rewardImage)) {
+                return response()->json([
+                    'message' => 'new reward image false'
+                ]) . 404;
+            }
+
+
             return response()->json([
-                'message' => 'reward created false',
-                'reward' => $modelReward,
+                'message' => 'new reward and image successfullry.',
+                'reward' => $reward,
                 'imageDataBase64' => $imageDataBase64
-            ], 404);
+            ]) . 201;
 
         } catch (\Exception $error) {
             return response()->json([
@@ -158,7 +157,6 @@ class RewardController extends Controller
                 'message' => 'api function show response success',
                 'rewards' => $rewards
             ], 200);
-
         } catch (\Exception $error) {
             return response()->json([
                 'message' => 'api function show error',
@@ -175,9 +173,7 @@ class RewardController extends Controller
         //
         try {
 
-            $checkUpdate = false;
-
-            $validatedData = $request->validate([
+            $request->validate([
                 'rewardID' => 'required|integer',
                 'name' => 'required|string',
                 'point' => 'required|numeric',
@@ -188,13 +184,6 @@ class RewardController extends Controller
 
             $modelReward = Reward::findOrFail($request->rewardID);
 
-            if (!$modelReward) {
-                return response()->json([
-                    'message' => 'api update reward response false',
-                    'rewardID' => $request->all()
-                ]);
-            }
-
             $modelReward->update([
                 'name' => $request->name,
                 'point' => $request->point,
@@ -202,6 +191,13 @@ class RewardController extends Controller
                 'status' => $request->status,
                 'updated_at' => $this->dateTimeFormatTimeZone()
             ]);
+
+            if (!$modelReward) {
+                return response()->json([
+                    'message' => 'api update reward response false',
+                    'rewardID' => $request->all()
+                ], 404);
+            }
 
             $modelRewardImage = RewardImage::where('reward_id', $modelReward->id)->first();
 
@@ -216,25 +212,15 @@ class RewardController extends Controller
                     'updated_at' => $this->dateTimeFormatTimeZone()
                 ]);
 
-                $checkUpdate = true;
-            }
-
-
-            if ($checkUpdate === true) {
-
-                return response()->json([
-                    'message' => 'api update reward success',
-                    'status' => 200
-                ], 200);
-
-            } else {
-
-                return response()->json([
-                    'message' => 'api update reward success',
-                    'status' => 404
-                ], 404);
 
             }
+
+
+            return response()->json([
+                'message' => 'api update reward success',
+                'reward' => $modelReward,
+                'status' => $request->status,
+            ], 200);
 
         } catch (\Exception $error) {
             return response()->json([
@@ -268,7 +254,6 @@ class RewardController extends Controller
                 'message' => 'api delete reward success',
                 'modelReward' => $modelReward
             ], 200);
-
         } catch (\Exception $error) {
             return response()->json([
                 'message' => 'api function destroy error',
