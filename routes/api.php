@@ -78,7 +78,7 @@ Route::prefix('/profile')->group(function () {
 // ********************************* Posts ************************************************
 Route::prefix('')->group(function () {
     Route::get('/postTypes', [PostController::class, 'getTypePost']);
-    
+
     Route::apiResource('/posts', PostController::class);
 
     Route::post('/posts/store/{postID}', [PostController::class, 'postStore']);

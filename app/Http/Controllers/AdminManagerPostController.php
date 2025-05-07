@@ -22,13 +22,15 @@ class AdminManagerPostController extends Controller
         try {
 
             $posts = Post::with(
+                'user',
                 'user.userProfile',
                 'postType',
                 'postDeletetion',
                 'postPopularity',
-                'postComment'
             )
                 ->get();
+
+
 
             if (!$posts) {
                 return [
@@ -124,28 +126,28 @@ class AdminManagerPostController extends Controller
                 'message' => 'api delete post success'
             ], 200);
 
-        //     DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
+            //     DB::beginTransaction(); // ใช้ Transaction เพื่อความปลอดภัย
 
-        //     $post = Post::findOrFail($postID);
+            //     $post = Post::findOrFail($postID);
 
-        //     if ($post) {
-        //         PostImage::where('post_id', $postID)->delete();
-        //         PostPopularity::where('post_id', $postID)->delete();
-        //         PostDeletetion::where('post_id', $postID)->delete();
-        //         $post->delete();
-        //     }
+            //     if ($post) {
+            //         PostImage::where('post_id', $postID)->delete();
+            //         PostPopularity::where('post_id', $postID)->delete();
+            //         PostDeletetion::where('post_id', $postID)->delete();
+            //         $post->delete();
+            //     }
 
-        //     DB::commit(); // บันทึกการเปลี่ยนแปลง
+            //     DB::commit(); // บันทึกการเปลี่ยนแปลง
 
-        //     return response()->json([
-        //         'message' => "Laravel API delete success",
-        //     ], 200);
-        // } catch (\Illuminate\Database\QueryException $e) {
-        //     DB::rollBack(); // ย้อนกลับการเปลี่ยนแปลงหากมีข้อผิดพลาดเกี่ยวกับ Database
+            //     return response()->json([
+            //         'message' => "Laravel API delete success",
+            //     ], 200);
+            // } catch (\Illuminate\Database\QueryException $e) {
+            //     DB::rollBack(); // ย้อนกลับการเปลี่ยนแปลงหากมีข้อผิดพลาดเกี่ยวกับ Database
 
-        //     return response()->json([
-        //         'message' => "Database error: " . $e->getMessage()
-        //     ], 500);
+            //     return response()->json([
+            //         'message' => "Database error: " . $e->getMessage()
+            //     ], 500);
 
 
         } catch (\Exception $error) {
